@@ -1,12 +1,19 @@
-// Google OAuth 2.0
-// CLIENT_ID deve ser configurado em js/config.js (não versionado)
 const Auth = {
-  CLIENT_ID: window.WM_CONFIG?.googleClientId || '',
+  get CLIENT_ID() {
+    // Prioridade: window.WM_CONFIG (hardcoded) > localStorage (salvo pelo setup)
+    return window.WM_CONFIG?.googleClientId || localStorage.getItem('wm-client-id') || ''
+  },
   SCOPES: 'https://www.googleapis.com/auth/spreadsheets',
   tokenClient: null,
 
   init() {
-    // Carregar Google Identity Services
+    if (!this.CLIENT_ID) {
+      // Sem Client ID: redirecionar para setup
+      if (!location.pathname.includes('setup')) {
+        window.location.href = 'setup.html'
+      }
+      return
+    }
     const script = document.createElement('script')
     script.src = 'https://accounts.google.com/gsi/client'
     script.onload = () => this.onGisLoad()
@@ -19,18 +26,22 @@ const Auth = {
       scope: this.SCOPES,
       callback: (resp) => this.handleToken(resp)
     })
-    // Verificar se já tem token válido
     const token = localStorage.getItem('wm-access-token')
     const expiry = localStorage.getItem('wm-token-expiry')
     if (token && expiry && Date.now() < parseInt(expiry)) {
       Sheets.accessToken = token
+      Sheets.spreadsheetId = localStorage.getItem('wm-sheet-id')
       this.onAuthenticated()
     }
   },
 
   login() {
+    if (!this.CLIENT_ID) {
+      window.location.href = 'setup.html'
+      return
+    }
     if (!this.tokenClient) {
-      alert('Google Identity Services ainda carregando. Tente novamente em instantes.')
+      showToast('Aguarde um instante e tente novamente', 'error')
       return
     }
     this.tokenClient.requestAccessToken()
@@ -50,21 +61,20 @@ const Auth = {
   },
 
   async onAuthenticated() {
-    // Verificar se já tem planilha configurada
     const sheetId = localStorage.getItem('wm-sheet-id')
     if (sheetId) {
       Sheets.spreadsheetId = sheetId
-      window.location.href = 'dashboard.html'
+      if (!location.pathname.includes('dashboard')) {
+        window.location.href = 'dashboard.html'
+      }
     } else {
-      // Primeira vez: criar planilha
       await this.setupSpreadsheet()
     }
   },
 
   async setupSpreadsheet() {
-    showToast('Configurando sua planilha...')
+    showToast('Criando sua planilha no Google Drive...')
     try {
-      // Criar nova planilha
       const res = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
         method: 'POST',
         headers: {
@@ -85,11 +95,11 @@ const Auth = {
       localStorage.setItem('wm-sheet-id', sheetId)
       Sheets.spreadsheetId = sheetId
       await Sheets.initSpreadsheet()
-      showToast('Tudo pronto!')
+      showToast('Planilha criada!')
       setTimeout(() => { window.location.href = 'dashboard.html' }, 1000)
     } catch (e) {
       console.error(e)
-      showToast('Erro ao criar planilha', 'error')
+      showToast('Erro ao criar planilha. Tente novamente.', 'error')
     }
   },
 
@@ -107,6 +117,10 @@ const Auth = {
   },
 
   requireAuth() {
+    if (!this.CLIENT_ID) {
+      window.location.href = 'setup.html'
+      return false
+    }
     if (!this.isLoggedIn()) {
       window.location.href = 'index.html'
       return false
