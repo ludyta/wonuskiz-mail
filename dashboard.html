@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — wonuskiz-mail</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="dashboard.html" class="navbar-logo">✦ wonuskiz</a>
+    <div class="navbar-links">
+      <a href="dashboard.html" class="navbar-link active">dashboard</a>
+      <a href="configuracoes.html" class="navbar-link">configurações</a>
+      <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()">
+        <i class="ti ti-moon"></i><span>dark</span>
+      </button>
+      <div class="navbar-avatar" id="user-avatar" onclick="Auth.logout()" title="Sair">l</div>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="header-row">
+      <div class="page-header">
+        <p class="page-eyebrow">✦ seus envios nacionais ✦</p>
+        <h1 class="page-title">Pedidos de envio</h1>
+        <p class="page-sub">caixinhas acumuladas, prontas pra pedir</p>
+      </div>
+      <div class="header-actions">
+        <div class="view-toggle">
+          <button class="vt-btn active" id="btn-cards" title="Cards">
+            <i class="ti ti-layout-grid"></i>
+          </button>
+          <button class="vt-btn" id="btn-table" title="Tabela">
+            <i class="ti ti-layout-list"></i>
+          </button>
+        </div>
+        <a href="nova-caixinha.html" class="btn btn-primary">
+          <i class="ti ti-plus"></i> Nova caixinha
+        </a>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total de caixinhas</div>
+        <div class="stat-value" id="stat-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Em trânsito</div>
+        <div class="stat-value" id="stat-transit">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Itens acumulados</div>
+        <div class="stat-value" id="stat-items">—</div>
+      </div>
+    </div>
+
+    <div id="loading" class="loading">
+      <i class="ti ti-loader ti-spin"></i> Carregando caixinhas...
+    </div>
+
+    <!-- CARDS VIEW -->
+    <div id="cards-view" class="cards-grid" style="display:none"></div>
+
+    <!-- TABLE VIEW -->
+    <div id="table-view" class="table-wrap" style="display:none">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Caixinha</th>
+            <th>Comunidade</th>
+            <th>Data do pedido</th>
+            <th>Itens</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
+    <div id="empty-state" class="empty-state" style="display:none">
+      <div class="empty-icon"><i class="ti ti-package"></i></div>
+      <div class="empty-title">Nenhuma caixinha ainda</div>
+      <div class="empty-sub">Crie sua primeira caixinha de envio nacional!</div>
+      <a href="nova-caixinha.html" class="btn btn-primary">
+        <i class="ti ti-plus"></i> Nova caixinha
+      </a>
+    </div>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/sheets.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    Theme.init()
+    if (!Auth.requireAuth()) throw new Error('Not authenticated')
+
+    let caixinhas = []
+    let itensCount = {}
+
+    async function loadDashboard() {
+      try {
+        caixinhas = await Sheets.getCaixinhas()
+        // Contar itens por caixinha
+        const todosItens = await Sheets.getRange('Itens', 'A2:B1000')
+        todosItens.filter(r => r[0]).forEach(r => {
+          itensCount[r[1]] = (itensCount[r[1]] || 0) + 1
+        })
+
+        document.getElementById('loading').style.display = 'none'
+
+        if (caixinhas.length === 0) {
+          document.getElementById('empty-state').style.display = 'block'
+          document.getElementById('stat-total').textContent = '0'
+          document.getElementById('stat-transit').textContent = '0'
+          document.getElementById('stat-items').textContent = '0'
+          return
+        }
+
+        // Stats
+        document.getElementById('stat-total').textContent = caixinhas.length
+        document.getElementById('stat-transit').textContent = caixinhas.filter(c => c.status === 'transit').length
+        document.getElementById('stat-items').textContent = Object.values(itensCount).reduce((a,b) => a+b, 0)
+
+        renderCards()
+        renderTable()
+        setupViewToggle(
+          document.getElementById('btn-cards'),
+          document.getElementById('btn-table'),
+          document.getElementById('cards-view'),
+          document.getElementById('table-view')
+        )
+      } catch (e) {
+        console.error(e)
+        document.getElementById('loading').innerHTML = '<i class="ti ti-alert-circle"></i> Erro ao carregar dados'
+        showToast('Erro ao carregar dados', 'error')
+      }
+    }
+
+    function renderCards() {
+      const container = document.getElementById('cards-view')
+      container.innerHTML = caixinhas.map(c => {
+        const qtd = itensCount[c.id] || 0
+        return `
+          <div class="caixinha-card">
+            ${statusStamp(c.status)}
+            <div class="card-name">${c.nome}</div>
+            <div class="card-meta">
+              <div class="card-meta-row">
+                <span class="card-meta-label">Comunidade</span>
+                <span class="card-meta-val">${c.comunidade || '—'}</span>
+              </div>
+              <div class="card-meta-row">
+                <span class="card-meta-label">Data do pedido</span>
+                <span class="card-meta-val">${formatDate(c.data_pedido)}</span>
+              </div>
+              <div class="card-meta-row">
+                <span class="card-meta-label">Itens</span>
+                <span class="card-meta-val">${qtd} ${qtd === 1 ? 'item' : 'itens'}</span>
+              </div>
+            </div>
+            <div class="card-foot">
+              <button class="icon-btn" onclick="location.href='caixinha.html?id=${c.id}'" title="Ver caixinha">
+                <i class="ti ti-eye"></i>
+              </button>
+              <button class="icon-btn" onclick="location.href='nova-caixinha.html?id=${c.id}'" title="Editar">
+                <i class="ti ti-edit"></i>
+              </button>
+            </div>
+          </div>
+        `
+      }).join('')
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('table-body')
+      tbody.innerHTML = caixinhas.map(c => {
+        const qtd = itensCount[c.id] || 0
+        return `
+          <tr>
+            <td>
+              <div class="td-name">${c.nome}</div>
+              <div class="td-sub">${c.comunidade || ''}</div>
+            </td>
+            <td>${c.comunidade || '—'}</td>
+            <td>${formatDate(c.data_pedido)}</td>
+            <td>${qtd} ${qtd === 1 ? 'item' : 'itens'}</td>
+            <td>${statusBadge(c.status)}</td>
+            <td style="display:flex;gap:6px">
+              <button class="icon-btn" onclick="location.href='caixinha.html?id=${c.id}'" title="Ver">
+                <i class="ti ti-eye"></i>
+              </button>
+              <button class="icon-btn" onclick="location.href='nova-caixinha.html?id=${c.id}'" title="Editar">
+                <i class="ti ti-edit"></i>
+              </button>
+            </td>
+          </tr>
+        `
+      }).join('')
+    }
+
+    loadDashboard()
+  </script>
+</body>
+</html>
