@@ -19,6 +19,15 @@
       <div class="login-logo">✦ wonuskiz</div>
       <p class="login-sub">seus pedidos de envio nacional, organizadinhos</p>
 
+      <div id="no-setup" style="display:none;margin-bottom:20px">
+        <div style="background:var(--rose-light);border:2px solid var(--cherry-dark);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--cherry-dark);margin-bottom:16px;line-height:1.5">
+          <i class="ti ti-settings"></i> Parece que é seu primeiro acesso! Faça o setup antes de entrar.
+        </div>
+        <a href="setup.html" class="btn btn-secondary" style="width:100%;justify-content:center">
+          <i class="ti ti-rocket"></i> Fazer setup
+        </a>
+      </div>
+
       <button class="login-btn" id="login-btn" onclick="Auth.login()">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
@@ -41,9 +50,20 @@
   <script src="js/auth.js"></script>
   <script>
     Theme.init()
-    // Redirecionar se já logado
-    if (Auth.isLoggedIn()) window.location.href = 'dashboard.html'
-    Auth.init()
+
+    // Se já logado, ir direto ao dashboard
+    if (Auth.isLoggedIn()) {
+      window.location.href = 'dashboard.html'
+    }
+
+    // Se não tiver Client ID configurado, mostrar aviso de setup
+    if (!Auth.CLIENT_ID) {
+      document.getElementById('no-setup').style.display = 'block'
+      document.getElementById('login-btn').style.opacity = '0.4'
+      document.getElementById('login-btn').style.pointerEvents = 'none'
+    } else {
+      Auth.init()
+    }
   </script>
 </body>
 </html>
