@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caixinha — wonuskiz-mail</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="dashboard.html" class="navbar-logo">✦ wonuskiz</a>
+    <div class="navbar-links">
+      <a href="dashboard.html" class="navbar-link">dashboard</a>
+      <a href="configuracoes.html" class="navbar-link">configurações</a>
+      <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()">
+        <i class="ti ti-moon"></i><span>dark</span>
+      </button>
+      <div class="navbar-avatar" onclick="Auth.logout()" title="Sair">l</div>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="breadcrumb">
+      <a href="dashboard.html">dashboard</a>
+      <span class="breadcrumb-sep">›</span>
+      <span id="bc-nome">...</span>
+    </div>
+
+    <div id="loading" class="loading"><i class="ti ti-loader ti-spin"></i> Carregando...</div>
+
+    <!-- HEADER -->
+    <div id="caixinha-header" class="caixinha-page-header" style="display:none">
+      <div class="caixinha-page-top">
+        <div>
+          <div class="caixinha-community" id="h-comunidade"></div>
+          <div class="caixinha-page-title" id="h-nome"></div>
+          <span id="h-badge"></span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-ghost btn-sm" onclick="copyPublicLink()">
+            <i class="ti ti-copy"></i> Copiar link
+          </button>
+          <a href="#" id="edit-link" class="btn btn-ghost btn-sm">
+            <i class="ti ti-edit"></i> Editar
+          </a>
+          <a href="#" id="new-item-link" class="btn btn-primary btn-sm">
+            <i class="ti ti-plus"></i> Novo item
+          </a>
+        </div>
+      </div>
+      <div class="caixinha-meta">
+        <div class="caixinha-meta-item">
+          <span class="caixinha-meta-label">Data do pedido</span>
+          <span class="caixinha-meta-val" id="h-data-pedido"></span>
+        </div>
+        <div class="caixinha-meta-item">
+          <span class="caixinha-meta-label">Data de envio</span>
+          <span class="caixinha-meta-val" id="h-data-envio"></span>
+        </div>
+        <div class="caixinha-meta-item">
+          <span class="caixinha-meta-label">Transportadora</span>
+          <span class="caixinha-meta-val" id="h-transportadora"></span>
+        </div>
+        <div class="caixinha-meta-item" id="rastreio-item">
+          <span class="caixinha-meta-label">Rastreio</span>
+          <span class="caixinha-meta-val mono" id="h-rastreio"></span>
+        </div>
+        <div class="caixinha-meta-item">
+          <span class="caixinha-meta-label">Itens</span>
+          <span class="caixinha-meta-val" id="h-itens"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TYPE CHIPS -->
+    <div id="type-chips" class="type-chips" style="display:none"></div>
+
+    <!-- VIEW TOGGLE ITEMS -->
+    <div id="item-controls" style="display:none;margin-bottom:16px">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm active" id="btn-acc" onclick="setItemView('acc')" style="border:2px solid var(--cherry-dark)">
+          <i class="ti ti-layout-list"></i> Categorizado
+        </button>
+        <button class="btn btn-ghost btn-sm" id="btn-grid" onclick="setItemView('grid')">
+          <i class="ti ti-layout-grid"></i> Grade
+        </button>
+      </div>
+    </div>
+
+    <!-- ACCORDION VIEW -->
+    <div id="acc-view" class="acc-list" style="display:none"></div>
+
+    <!-- GRID VIEW -->
+    <div id="grid-view" class="items-grid" style="display:none"></div>
+
+    <div id="empty-items" class="empty-state" style="display:none">
+      <div class="empty-icon"><i class="ti ti-photo"></i></div>
+      <div class="empty-title">Nenhum item ainda</div>
+      <div class="empty-sub">Adicione os primeiros itens desta caixinha!</div>
+      <a href="#" id="empty-new-item" class="btn btn-primary">
+        <i class="ti ti-plus"></i> Novo item
+      </a>
+    </div>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/sheets.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    Theme.init()
+    if (!Auth.requireAuth()) throw new Error('Not authenticated')
+
+    const params = new URLSearchParams(location.search)
+    const caixinhaId = params.get('id')
+    if (!caixinhaId) { location.href = 'dashboard.html' }
+
+    let caixinha = null
+    let itens = []
+    let currentView = localStorage.getItem('wm-item-view') || 'acc'
+
+    async function load() {
+      try {
+        caixinha = await Sheets.getCaixinha(caixinhaId)
+        itens = await Sheets.getItens(caixinhaId)
+
+        if (!caixinha) { location.href = 'dashboard.html'; return }
+
+        document.getElementById('loading').style.display = 'none'
+        document.getElementById('bc-nome').textContent = caixinha.nome
+        document.title = caixinha.nome + ' — wonuskiz-mail'
+
+        renderHeader()
+
+        if (itens.length === 0) {
+          document.getElementById('empty-items').style.display = 'block'
+          document.getElementById('empty-new-item').href = `novo-item.html?caixinha_id=${caixinhaId}`
+          return
+        }
+
+        document.getElementById('item-controls').style.display = 'flex'
+        renderTypeChips()
+        renderAcc()
+        renderGrid()
+        setItemView(currentView)
+
+        // Rastreamento Correios
+        if (caixinha.transportadora === 'Correios' && caixinha.codigo_rastreio) {
+          loadRastreamento()
+        }
+      } catch (e) {
+        console.error(e)
+        document.getElementById('loading').innerHTML = '<i class="ti ti-alert-circle"></i> Erro ao carregar'
+      }
+    }
+
+    function renderHeader() {
+      document.getElementById('caixinha-header').style.display = 'block'
+      document.getElementById('h-comunidade').textContent = caixinha.comunidade || ''
+      document.getElementById('h-nome').textContent = caixinha.nome
+      document.getElementById('h-badge').outerHTML = statusStamp(caixinha.status)
+      document.getElementById('h-data-pedido').textContent = formatDate(caixinha.data_pedido)
+      document.getElementById('h-data-envio').textContent = formatDate(caixinha.data_envio)
+      document.getElementById('h-transportadora').textContent = caixinha.transportadora || '—'
+      document.getElementById('h-rastreio').textContent = caixinha.codigo_rastreio || '—'
+      document.getElementById('edit-link').href = `nova-caixinha.html?id=${caixinhaId}`
+      document.getElementById('new-item-link').href = `novo-item.html?caixinha_id=${caixinhaId}`
+
+      // Resumo de tipos
+      const tipoCounts = {}
+      itens.forEach(i => { tipoCounts[i.tipo_item] = (tipoCounts[i.tipo_item] || 0) + (i.quantidade || 1) })
+      document.getElementById('h-itens').textContent = Object.entries(tipoCounts).map(([t,q]) => `${q} ${t}${q>1?'s':''}`).join(' · ') || `${itens.length} itens`
+    }
+
+    function renderTypeChips() {
+      const tipoCounts = {}
+      itens.forEach(i => { tipoCounts[i.tipo_item] = (tipoCounts[i.tipo_item] || 0) + (i.quantidade || 1) })
+      const el = document.getElementById('type-chips')
+      el.style.display = 'flex'
+      el.innerHTML = Object.entries(tipoCounts).map(([t,q]) => `<div class="type-chip"><strong>${q}</strong> ${t}${q>1?'s':''}</div>`).join('')
+    }
+
+    function groupItens() {
+      // Agrupar: tipo_ceg → nome_ceg → nome_set → itens
+      const groups = {}
+      itens.forEach(item => {
+        const ceg = item.tipo_ceg || 'Outros'
+        const nome = item.nome_ceg || '—'
+        const set = item.nome_set || '—'
+        if (!groups[ceg]) groups[ceg] = {}
+        if (!groups[ceg][nome]) groups[ceg][nome] = {}
+        if (!groups[ceg][nome][set]) groups[ceg][nome][set] = []
+        groups[ceg][nome][set].push(item)
+      })
+      return groups
+    }
+
+    function itemCardHTML(item) {
+      const checked = item.separado ? 'checked' : ''
+      return `
+        <div class="item-card" id="item-${item.id}">
+          <div class="item-img">
+            ${item.foto_url ? `<img src="${item.foto_url}" alt="foto">` : '<i class="ti ti-photo"></i>'}
+          </div>
+          <div class="item-info">
+            <span class="item-type">${item.tipo_item}</span>
+            <span class="item-ref">${item.linha_ref || '—'}</span>
+            <span class="item-claim">${item.claim || item.nome_set}</span>
+            <span class="item-qty">Qtd: ${item.quantidade || 1}</span>
+          </div>
+          <div class="item-foot">
+            <div class="check-box ${checked}" onclick="toggleCheck('${item.id}', this)" title="Separado"></div>
+            <span class="check-label">Separado</span>
+            <a href="novo-item.html?id=${item.id}&caixinha_id=${caixinhaId}" style="margin-left:auto;color:var(--text-muted);font-size:13px" title="Editar">
+              <i class="ti ti-edit"></i>
+            </a>
+          </div>
+        </div>
+      `
+    }
+
+    function renderAcc() {
+      const groups = groupItens()
+      const container = document.getElementById('acc-view')
+      container.innerHTML = ''
+
+      Object.entries(groups).forEach(([tipoCeg, nomes]) => {
+        Object.entries(nomes).forEach(([nomeCeg, sets]) => {
+          const allItems = Object.values(sets).flat()
+          const thumbs = allItems.slice(0, 4).map(i =>
+            `<div class="acc-thumb">${i.foto_url ? `<img src="${i.foto_url}">` : '<i class="ti ti-photo"></i>'}</div>`
+          ).join('')
+          const more = allItems.length > 4 ? `<span class="acc-more">+${allItems.length - 4}</span>` : ''
+
+          const subsecs = Object.entries(sets).map(([setName, setItems]) => `
+            <div class="subsec">
+              <div class="subsec-label">${setName} <span class="subsec-count">${setItems.length}</span></div>
+              <div class="items-grid">${setItems.map(itemCardHTML).join('')}</div>
+            </div>
+          `).join('')
+
+          const accItem = document.createElement('div')
+          accItem.className = 'acc-item'
+          accItem.innerHTML = `
+            <div class="acc-header">
+              <div class="acc-header-left">
+                <div class="acc-title-row">
+                  <span class="acc-ceg-tag">${tipoCeg}</span>
+                  <span class="acc-title">${nomeCeg}</span>
+                </div>
+                <div class="acc-preview">${thumbs}${more}</div>
+              </div>
+              <div class="acc-header-right">
+                <span class="acc-count">${allItems.length} itens</span>
+                <span class="acc-arrow"><i class="ti ti-chevron-down"></i></span>
+              </div>
+            </div>
+            <div class="acc-body">${subsecs}</div>
+          `
+          setupAccordion(accItem.querySelector('.acc-header'))
+          container.appendChild(accItem)
+        })
+      })
+    }
+
+    function renderGrid() {
+      document.getElementById('grid-view').innerHTML = itens.map(itemCardHTML).join('')
+    }
+
+    function setItemView(v) {
+      currentView = v
+      localStorage.setItem('wm-item-view', v)
+      document.getElementById('acc-view').style.display = v === 'acc' ? 'flex' : 'none'
+      document.getElementById('grid-view').style.display = v === 'grid' ? 'grid' : 'none'
+      document.getElementById('btn-acc').className = v === 'acc' ? 'btn btn-sm' : 'btn btn-ghost btn-sm'
+      document.getElementById('btn-acc').style.border = v === 'acc' ? '2px solid var(--cherry-dark)' : ''
+      document.getElementById('btn-grid').className = v === 'grid' ? 'btn btn-sm' : 'btn btn-ghost btn-sm'
+      document.getElementById('btn-grid').style.border = v === 'grid' ? '2px solid var(--cherry-dark)' : ''
+    }
+
+    async function toggleCheck(itemId, el) {
+      el.classList.toggle('checked')
+      const isChecked = el.classList.contains('checked')
+      try {
+        await Sheets.toggleSeparado(itemId, isChecked)
+      } catch (e) {
+        el.classList.toggle('checked')
+        showToast('Erro ao atualizar', 'error')
+      }
+    }
+
+    async function loadRastreamento() {
+      const rastreioEl = document.getElementById('h-rastreio')
+      const status = await Sheets.getRastreamento(caixinha.codigo_rastreio)
+      if (status) {
+        rastreioEl.innerHTML = `
+          ${caixinha.codigo_rastreio}<br>
+          <small style="font-family:var(--font-body);font-size:11px;color:var(--text-sec)">${status.status}</small>
+        `
+      }
+    }
+
+    function copyPublicLink() {
+      const url = `${location.origin}/caixinha-publica.html?id=${caixinhaId}`
+      copyToClipboard(url)
+    }
+
+    load()
+  </script>
+</body>
+</html>
