@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova caixinha — wonuskiz-mail</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="dashboard.html" class="navbar-logo">✦ wonuskiz</a>
+    <div class="navbar-links">
+      <a href="dashboard.html" class="navbar-link">dashboard</a>
+      <a href="configuracoes.html" class="navbar-link">configurações</a>
+      <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()">
+        <i class="ti ti-moon"></i><span>dark</span>
+      </button>
+      <div class="navbar-avatar" onclick="Auth.logout()" title="Sair">l</div>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="breadcrumb">
+      <a href="dashboard.html">dashboard</a>
+      <span class="breadcrumb-sep">›</span>
+      <span id="breadcrumb-current">Nova caixinha</span>
+    </div>
+
+    <div class="page-header">
+      <h1 class="page-title" id="page-title">Cadastrar caixinha</h1>
+      <p class="page-sub" id="page-sub">preencha as informações do novo envio</p>
+    </div>
+
+    <div style="max-width:640px">
+      <!-- IDENTIFICAÇÃO -->
+      <div class="form-section">
+        <div class="form-section-title">Identificação</div>
+        <div class="form-grid">
+          <div class="form-field full">
+            <label class="form-label">Nome da caixinha <span class="req">*</span></label>
+            <input type="text" id="nome" class="form-input" placeholder="Ex: Envio Nacional | Julho 2026">
+          </div>
+          <div class="form-field full">
+            <label class="form-label">Comunidade <span class="req">*</span></label>
+            <div class="combo-wrap">
+              <input type="text" id="comunidade" class="form-input" placeholder="Ex: Do It" style="padding-right:32px">
+              <i class="ti ti-chevron-down combo-arrow"></i>
+              <div class="combo-dropdown" id="combo-comunidade"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RASTREAMENTO -->
+      <div class="form-section">
+        <div class="form-section-title">Rastreamento</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="form-label">Transportadora</label>
+            <select id="transportadora" class="form-select" onchange="onTransportadoraChange()">
+              <option value="Correios">Correios</option>
+              <option value="Outra">Outra transportadora</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Código de rastreio</label>
+            <input type="text" id="codigo_rastreio" class="form-input" placeholder="Ex: BR123456789BR">
+            <span class="form-hint" id="rastreio-hint">Será consultado automaticamente nos Correios</span>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Data do pedido</label>
+            <input type="date" id="data_pedido" class="form-input">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Data de envio</label>
+            <input type="date" id="data_envio" class="form-input">
+          </div>
+        </div>
+      </div>
+
+      <!-- STATUS -->
+      <div class="form-section">
+        <div class="form-section-title">Status</div>
+        <div class="form-grid">
+          <div class="form-field full">
+            <label class="form-label">Status atual</label>
+            <select id="status" class="form-select">
+              <option value="accumulating">Acumulando</option>
+              <option value="posted">Postado</option>
+              <option value="transit">Em trânsito</option>
+              <option value="received">Recebido</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="dashboard.html" class="btn btn-ghost">Cancelar</a>
+        <button class="btn btn-primary" id="save-btn" onclick="save()">
+          <i class="ti ti-check"></i> <span id="save-label">Salvar caixinha</span>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/sheets.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    Theme.init()
+    if (!Auth.requireAuth()) throw new Error('Not authenticated')
+
+    const params = new URLSearchParams(location.search)
+    const editId = params.get('id')
+    let config = {}
+    let editData = null
+
+    async function init() {
+      config = await Sheets.getConfig()
+      setupCombo(
+        document.getElementById('comunidade'),
+        document.getElementById('combo-comunidade'),
+        config.comunidade || []
+      )
+      if (editId) {
+        document.getElementById('page-title').textContent = 'Editar caixinha'
+        document.getElementById('page-sub').textContent = 'atualize as informações do envio'
+        document.getElementById('breadcrumb-current').textContent = 'Editar caixinha'
+        document.getElementById('save-label').textContent = 'Salvar alterações'
+        editData = await Sheets.getCaixinha(editId)
+        if (editData) {
+          document.getElementById('nome').value = editData.nome || ''
+          document.getElementById('comunidade').value = editData.comunidade || ''
+          document.getElementById('transportadora').value = editData.transportadora || 'Correios'
+          document.getElementById('codigo_rastreio').value = editData.codigo_rastreio || ''
+          document.getElementById('data_pedido').value = editData.data_pedido || ''
+          document.getElementById('data_envio').value = editData.data_envio || ''
+          document.getElementById('status').value = editData.status || 'accumulating'
+          onTransportadoraChange()
+        }
+      }
+    }
+
+    function onTransportadoraChange() {
+      const t = document.getElementById('transportadora').value
+      const hint = document.getElementById('rastreio-hint')
+      hint.textContent = t === 'Correios'
+        ? 'Será consultado automaticamente nos Correios'
+        : 'Cole o código para consultar manualmente no site da transportadora'
+    }
+
+    async function save() {
+      const btn = document.getElementById('save-btn')
+      const nome = document.getElementById('nome').value.trim()
+      const comunidade = document.getElementById('comunidade').value.trim()
+      if (!nome || !comunidade) {
+        showToast('Preencha nome e comunidade', 'error')
+        return
+      }
+      btn.disabled = true
+      btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Salvando...'
+      try {
+        const data = {
+          nome, comunidade,
+          transportadora: document.getElementById('transportadora').value,
+          codigo_rastreio: document.getElementById('codigo_rastreio').value.trim(),
+          data_pedido: document.getElementById('data_pedido').value,
+          data_envio: document.getElementById('data_envio').value,
+          status: document.getElementById('status').value
+        }
+        if (editId) {
+          await Sheets.updateCaixinha(editId, data)
+          showToast('Caixinha atualizada!')
+        } else {
+          const id = await Sheets.createCaixinha(data)
+          showToast('Caixinha criada!')
+          setTimeout(() => { location.href = `caixinha.html?id=${id}` }, 800)
+          return
+        }
+        setTimeout(() => { location.href = 'dashboard.html' }, 800)
+      } catch (e) {
+        console.error(e)
+        showToast('Erro ao salvar', 'error')
+        btn.disabled = false
+        btn.innerHTML = '<i class="ti ti-check"></i> Salvar caixinha'
+      }
+    }
+
+    init()
+  </script>
+</body>
+</html>
