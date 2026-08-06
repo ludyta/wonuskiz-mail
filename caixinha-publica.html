@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envio — wonuskiz-mail</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+</head>
+<body>
+  <nav class="navbar">
+    <span class="navbar-logo">✦ wonuskiz</span>
+    <div class="navbar-links">
+      <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()">
+        <i class="ti ti-moon"></i><span>dark</span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div id="loading" class="loading"><i class="ti ti-loader ti-spin"></i> Carregando...</div>
+
+    <div id="gom-header" class="gom-header" style="display:none">
+      <div class="gom-title" id="g-nome"></div>
+      <div class="gom-owner" id="g-owner">ludytaa</div>
+      <div class="gom-chips" id="g-chips"></div>
+    </div>
+
+    <div id="item-controls" style="display:none;margin-bottom:16px">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" id="btn-acc" onclick="setItemView('acc')" style="border:2px solid var(--cherry-dark)">
+          <i class="ti ti-layout-list"></i> Categorizado
+        </button>
+        <button class="btn btn-ghost btn-sm" id="btn-grid" onclick="setItemView('grid')">
+          <i class="ti ti-layout-grid"></i> Grade
+        </button>
+      </div>
+    </div>
+
+    <div id="acc-view" class="acc-list" style="display:none"></div>
+    <div id="grid-view" class="items-grid" style="display:none"></div>
+
+    <div id="empty" class="empty-state" style="display:none">
+      <div class="empty-icon"><i class="ti ti-package"></i></div>
+      <div class="empty-title">Nenhum item ainda</div>
+      <div class="empty-sub">Esta caixinha ainda não tem itens cadastrados.</div>
+    </div>
+
+    <div id="error" class="empty-state" style="display:none">
+      <div class="empty-icon"><i class="ti ti-alert-circle"></i></div>
+      <div class="empty-title">Caixinha não encontrada</div>
+      <div class="empty-sub">Verifique se o link está correto.</div>
+    </div>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/sheets.js"></script>
+  <script>
+    Theme.init()
+
+    const params = new URLSearchParams(location.search)
+    const caixinhaId = params.get('id')
+    let currentView = 'acc'
+
+    async function load() {
+      if (!caixinhaId) { showError(); return }
+
+      // Para a visão pública, precisamos de acesso anônimo à planilha
+      // A planilha precisa ter compartilhamento "qualquer pessoa com o link pode ver"
+      // e usamos a URL pública de leitura
+      const sheetId = atob(caixinhaId.split('_')[0] || '')
+      // Alternativamente, guardamos sheetId no localStorage do owner
+      // Para simplificar: buscar via API pública usando o spreadsheetId embutido na URL
+      const publicSheetId = params.get('sheet')
+
+      if (!publicSheetId) {
+        document.getElementById('loading').style.display = 'none'
+        document.getElementById('error').style.display = 'block'
+        return
+      }
+
+      try {
+        // Leitura pública via URL de exportação do Sheets
+        const url = `https://docs.google.com/spreadsheets/d/${publicSheetId}/gviz/tq?tqx=out:json&sheet=`
+
+        async function readSheet(sheetName) {
+          const res = await fetch(url + encodeURIComponent(sheetName))
+          const text = await res.text()
+          const json = JSON.parse(text.substring(47, text.length - 2))
+          return json.table.rows.map(r => r.c.map(c => c ? (c.v || '') : ''))
+        }
+
+        const caixinhasRows = await readSheet('Caixinhas')
+        const caixinha = caixinhasRows.find(r => r[0] === caixinhaId)
+        if (!caixinha) { showError(); return }
+
+        const itensRows = await readSheet('Itens')
+        const itens = itensRows
+          .filter(r => r[0] && r[1] === caixinhaId)
+          .map(r => ({
+            id: r[0], caixinha_id: r[1], foto_url: r[2],
+            tipo_item: r[3], tipo_ceg: r[4], nome_ceg: r[5],
+            nome_set: r[6], linha_ref: r[7], claim: r[8],
+            quantidade: parseInt(r[9]) || 1, separado: r[10] === 'TRUE'
+          }))
+
+        document.getElementById('loading').style.display = 'none'
+        renderGomHeader(caixinha, itens)
+
+        if (itens.length === 0) { document.getElementById('empty').style.display = 'block'; return }
+
+        document.getElementById('item-controls').style.display = 'flex'
+        renderAcc(itens)
+        renderGrid(itens)
+        setItemView('acc')
+      } catch (e) {
+        console.error(e)
+        showError()
+      }
+    }
+
+    function showError() {
+      document.getElementById('loading').style.display = 'none'
+      document.getElementById('error').style.display = 'block'
+    }
+
+    function renderGomHeader(c, itens) {
+      document.getElementById('gom-header').style.display = 'block'
+      document.getElementById('g-nome').textContent = c[1] || 'Envio'
+      const tipoCounts = {}
+      itens.forEach(i => { tipoCounts[i.tipo_item] = (tipoCounts[i.tipo_item] || 0) + (i.quantidade || 1) })
+      const cegsUnicas = new Set(itens.map(i => i.nome_ceg)).size
+      const chips = document.getElementById('g-chips')
+      chips.innerHTML = Object.entries(tipoCounts).map(([t,q]) =>
+        `<div class="type-chip"><strong>${q}</strong> ${t}${q>1?'s':''}</div>`
+      ).join('')
+      chips.innerHTML += `<div class="type-chip"><strong>${cegsUnicas}</strong> CEG${cegsUnicas>1?'s':''}</div>`
+    }
+
+    function itemCardHTML(item) {
+      return `
+        <div class="item-card">
+          <div class="item-img">
+            ${item.foto_url ? `<img src="${item.foto_url}" alt="foto">` : '<i class="ti ti-photo"></i>'}
+          </div>
+          <div class="item-info">
+            <span class="item-type">${item.tipo_item}</span>
+            <span class="item-ref">${item.linha_ref || '—'}</span>
+            <span class="item-claim">${item.claim || item.nome_set}</span>
+            <span class="item-qty">Qtd: ${item.quantidade || 1}</span>
+          </div>
+          <div class="item-foot">
+            <div class="check-box ${item.separado ? 'checked' : ''}" style="cursor:default"></div>
+            <span class="check-label">Separado</span>
+          </div>
+        </div>
+      `
+    }
+
+    function renderAcc(itens) {
+      const groups = {}
+      itens.forEach(item => {
+        const ceg = item.tipo_ceg || 'Outros'
+        const nome = item.nome_ceg || '—'
+        const set = item.nome_set || '—'
+        if (!groups[ceg]) groups[ceg] = {}
+        if (!groups[ceg][nome]) groups[ceg][nome] = {}
+        if (!groups[ceg][nome][set]) groups[ceg][nome][set] = []
+        groups[ceg][nome][set].push(item)
+      })
+
+      const container = document.getElementById('acc-view')
+      container.innerHTML = ''
+      Object.entries(groups).forEach(([tipoCeg, nomes]) => {
+        Object.entries(nomes).forEach(([nomeCeg, sets]) => {
+          const allItems = Object.values(sets).flat()
+          const thumbs = allItems.slice(0, 4).map(i =>
+            `<div class="acc-thumb">${i.foto_url ? `<img src="${i.foto_url}">` : '<i class="ti ti-photo"></i>'}</div>`
+          ).join('')
+          const more = allItems.length > 4 ? `<span class="acc-more">+${allItems.length - 4}</span>` : ''
+          const subsecs = Object.entries(sets).map(([setName, setItems]) => `
+            <div class="subsec">
+              <div class="subsec-label">${setName} <span class="subsec-count">${setItems.length}</span></div>
+              <div class="items-grid">${setItems.map(itemCardHTML).join('')}</div>
+            </div>
+          `).join('')
+
+          const accItem = document.createElement('div')
+          accItem.className = 'acc-item'
+          accItem.innerHTML = `
+            <div class="acc-header">
+              <div class="acc-header-left">
+                <div class="acc-title-row">
+                  <span class="acc-ceg-tag">${tipoCeg}</span>
+                  <span class="acc-title">${nomeCeg}</span>
+                </div>
+                <div class="acc-preview">${thumbs}${more}</div>
+              </div>
+              <div class="acc-header-right">
+                <span class="acc-count">${allItems.length} itens</span>
+                <span class="acc-arrow"><i class="ti ti-chevron-down"></i></span>
+              </div>
+            </div>
+            <div class="acc-body">${subsecs}</div>
+          `
+          setupAccordion(accItem.querySelector('.acc-header'))
+          container.appendChild(accItem)
+        })
+      })
+    }
+
+    function renderGrid(itens) {
+      document.getElementById('grid-view').innerHTML = itens.map(itemCardHTML).join('')
+    }
+
+    function setItemView(v) {
+      currentView = v
+      document.getElementById('acc-view').style.display = v === 'acc' ? 'flex' : 'none'
+      document.getElementById('grid-view').style.display = v === 'grid' ? 'grid' : 'none'
+      document.getElementById('btn-acc').className = v === 'acc' ? 'btn btn-sm' : 'btn btn-ghost btn-sm'
+      document.getElementById('btn-acc').style.border = v === 'acc' ? '2px solid var(--cherry-dark)' : ''
+      document.getElementById('btn-grid').className = v === 'grid' ? 'btn btn-sm' : 'btn btn-ghost btn-sm'
+      document.getElementById('btn-grid').style.border = v === 'grid' ? '2px solid var(--cherry-dark)' : ''
+    }
+
+    load()
+  </script>
+</body>
+</html>
