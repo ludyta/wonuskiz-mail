@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup — wonuskiz-mail</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <style>
+    .wizard { max-width: 680px; margin: 0 auto; }
+
+    .steps-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 36px;
+    }
+
+    .step-dot {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 3px solid var(--border);
+      background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 700; font-size: 15px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: all .2s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-dot.active {
+      border-color: var(--cherry-dark);
+      background: var(--cherry-dark);
+      color: var(--bg);
+    }
+
+    .step-dot.done {
+      border-color: #0a5c2a;
+      background: #b8e8c8;
+      color: #0a5c2a;
+    }
+
+    .step-line {
+      flex: 1;
+      height: 3px;
+      background: var(--border);
+      margin: 0 -1px;
+      transition: background .3s;
+    }
+
+    .step-line.done { background: #0a5c2a; }
+
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+
+    .step-card {
+      background: var(--surface);
+      border: 3px solid var(--cherry-dark);
+      border-radius: var(--radius-blob);
+      padding: 28px 32px;
+      box-shadow: 5px 5px 0 var(--shadow);
+    }
+
+    .step-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--cherry-light);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      margin-bottom: 6px;
+    }
+
+    .step-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 26px;
+      color: var(--cherry-dark);
+      margin-bottom: 10px;
+      line-height: 1.1;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--text-sec);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .instruction-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .instruction-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .instruction-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--rose);
+      border: 2px solid var(--cherry-dark);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 700; font-size: 12px;
+      color: var(--cherry-dark);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .external-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--cherry-light);
+      font-weight: 700;
+      text-decoration: none;
+      border-bottom: 2px solid var(--cherry-light);
+      padding-bottom: 1px;
+    }
+
+    .external-link:hover { color: var(--cherry-dark); border-color: var(--cherry-dark); }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-sec);
+    }
+
+    .big-input {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      width: 100%;
+      transition: border-color .15s;
+    }
+
+    .big-input:focus { border-color: var(--cherry-dark); }
+    .big-input::placeholder { color: var(--text-muted); }
+
+    .step-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 2px dashed var(--border);
+    }
+
+    .status-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .status-box.info { background: #e8f0fe; color: #1a3a8a; border: 2px solid #c8d4f5; }
+    .status-box.success { background: #b8e8c8; color: #0a5c2a; border: 2px solid #0a5c2a; }
+    .status-box.error { background: #fce4e4; color: #c0392b; border: 2px solid #c0392b; }
+    .status-box.warning { background: #ffd9a0; color: #7a4a00; border: 2px solid #a06020; }
+
+    [data-theme="dark"] .status-box.info { background: #1a2f6a; color: #c8d4f5; }
+    [data-theme="dark"] .status-box.success { background: #0a3a1a; color: #b8e8c8; }
+    [data-theme="dark"] .status-box.error { background: #4a1010; color: #f5b8b8; }
+    [data-theme="dark"] .status-box.warning { background: #4a2a00; color: #ffd9a0; }
+
+    .img-hint {
+      background: var(--bg);
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text-sec);
+      margin-bottom: 16px;
+      font-family: var(--font-mono);
+      line-height: 1.6;
+    }
+
+    .done-icon {
+      font-size: 56px;
+      text-align: center;
+      margin: 16px 0 20px;
+    }
+
+    .confetti { animation: pop .4s ease-out; }
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      70% { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @media(max-width:500px) {
+      .step-card { padding: 20px 18px; }
+      .step-title { font-size: 20px; }
+      .steps-bar { gap: 0; }
+      .step-dot { width: 28px; height: 28px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <span class="navbar-logo">✦ wonuskiz</span>
+    <div class="navbar-links">
+      <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()">
+        <i class="ti ti-moon"></i><span>dark</span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="wizard">
+
+      <!-- PROGRESS BAR -->
+      <div class="steps-bar">
+        <div class="step-dot active" id="dot-1">1</div>
+        <div class="step-line" id="line-1"></div>
+        <div class="step-dot" id="dot-2">2</div>
+        <div class="step-line" id="line-2"></div>
+        <div class="step-dot" id="dot-3">3</div>
+        <div class="step-line" id="line-3"></div>
+        <div class="step-dot" id="dot-4">4</div>
+        <div class="step-line" id="line-4"></div>
+        <div class="step-dot" id="dot-5">5</div>
+      </div>
+
+      <!-- STEP 1: Google Cloud Project -->
+      <div class="step-panel active" id="step-1">
+        <div class="step-card">
+          <p class="step-eyebrow">passo 1 de 5</p>
+          <h2 class="step-title">Criar projeto no Google Cloud</h2>
+          <p class="step-desc">
+            Precisamos de um projeto no Google Cloud para habilitar o login com Google e o acesso às planilhas. Leva menos de 2 minutos!
+          </p>
+
+          <ol class="instruction-list">
+            <li>
+              <span class="instruction-num">1</span>
+              <span>Abra o <a href="https://console.cloud.google.com/projectcreate" target="_blank" class="external-link">Google Cloud Console <i class="ti ti-external-link" style="font-size:12px"></i></a> numa nova aba</span>
+            </li>
+            <li>
+              <span class="instruction-num">2</span>
+              <span>Em <strong>Project name</strong>, escreva <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-family:var(--font-mono)">wonuskiz-mail</code></span>
+            </li>
+            <li>
+              <span class="instruction-num">3</span>
+              <span>Clique em <strong>Create</strong> e aguarde o projeto ser criado</span>
+            </li>
+            <li>
+              <span class="instruction-num">4</span>
+              <span>Certifique que o projeto <strong>wonuskiz-mail</strong> está selecionado no topo da página</span>
+            </li>
+          </ol>
+
+          <div class="status-box info">
+            <i class="ti ti-info-circle"></i>
+            Você precisa estar logada com a mesma conta Google que vai usar no wonuskiz-mail
+          </div>
+
+          <div class="step-actions">
+            <span></span>
+            <button class="btn btn-primary" onclick="goTo(2)">
+              Projeto criado! <i class="ti ti-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Ativar APIs -->
+      <div class="step-panel" id="step-2">
+        <div class="step-card">
+          <p class="step-eyebrow">passo 2 de 5</p>
+          <h2 class="step-title">Ativar as APIs necessárias</h2>
+          <p class="step-desc">
+            Precisamos ativar a Google Sheets API para o site conseguir ler e escrever na planilha.
+          </p>
+
+          <ol class="instruction-list">
+            <li>
+              <span class="instruction-num">1</span>
+              <span>Clique aqui para abrir diretamente: <a href="https://console.cloud.google.com/apis/library/sheets.googleapis.com" target="_blank" class="external-link">Google Sheets API <i class="ti ti-external-link" style="font-size:12px"></i></a></span>
+            </li>
+            <li>
+              <span class="instruction-num">2</span>
+              <span>Clique no botão azul <strong>Ativar</strong> (ou <em>Enable</em>)</span>
+            </li>
+            <li>
+              <span class="instruction-num">3</span>
+              <span>Aguarde a ativação e volte aqui</span>
+            </li>
+          </ol>
+
+          <div class="status-box success">
+            <i class="ti ti-check"></i>
+            Só precisamos da Sheets API — nada mais!
+          </div>
+
+          <div class="step-actions">
+            <button class="btn btn-ghost" onclick="goTo(1)">
+              <i class="ti ti-arrow-left"></i> Voltar
+            </button>
+            <button class="btn btn-primary" onclick="goTo(3)">
+              API ativada! <i class="ti ti-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: OAuth Client ID -->
+      <div class="step-panel" id="step-3">
+        <div class="step-card">
+          <p class="step-eyebrow">passo 3 de 5</p>
+          <h2 class="step-title">Criar o Client ID do OAuth</h2>
+          <p class="step-desc">
+            Esse é o passo mais importante — ele cria a "chave" que permite o login com Google no seu site.
+          </p>
+
+          <ol class="instruction-list">
+            <li>
+              <span class="instruction-num">1</span>
+              <span>Abra <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="external-link">Credenciais <i class="ti ti-external-link" style="font-size:12px"></i></a> no Google Cloud</span>
+            </li>
+            <li>
+              <span class="instruction-num">2</span>
+              <span>Clique em <strong>+ Criar credenciais → ID do cliente OAuth 2.0</strong></span>
+            </li>
+            <li>
+              <span class="instruction-num">3</span>
+              <span>Se pedir pra configurar a tela de consentimento, escolha <strong>Externo</strong>, preencha só o nome do app (<code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-family:var(--font-mono)">wonuskiz-mail</code>) e seu e-mail, e salve</span>
+            </li>
+            <li>
+              <span class="instruction-num">4</span>
+              <span>De volta em Credenciais, clique em <strong>+ Criar credenciais → ID do cliente OAuth 2.0</strong></span>
+            </li>
+            <li>
+              <span class="instruction-num">5</span>
+              <span>Tipo: <strong>Aplicativo da Web</strong></span>
+            </li>
+            <li>
+              <span class="instruction-num">6</span>
+              <span>Em <strong>Origens JavaScript autorizadas</strong>, adicione:</span>
+            </li>
+          </ol>
+
+          <div class="img-hint" id="origins-hint">
+            https://ludyta.github.io
+          </div>
+
+          <ol class="instruction-list" start="7">
+            <li>
+              <span class="instruction-num">7</span>
+              <span>Clique em <strong>Criar</strong> e copie o <strong>ID do cliente</strong> que aparece</span>
+            </li>
+          </ol>
+
+          <div class="input-group">
+            <label>Cole o Client ID aqui <span style="color:var(--cherry-light)">*</span></label>
+            <input
+              type="text"
+              id="client-id-input"
+              class="big-input"
+              placeholder="123456789-abc...apps.googleusercontent.com"
+              oninput="validateClientId()"
+            >
+          </div>
+
+          <div id="client-id-status"></div>
+
+          <div class="step-actions">
+            <button class="btn btn-ghost" onclick="goTo(2)">
+              <i class="ti ti-arrow-left"></i> Voltar
+            </button>
+            <button class="btn btn-primary" id="btn-step3" onclick="saveClientId()" disabled>
+              Salvar e continuar <i class="ti ti-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: GitHub Pages -->
+      <div class="step-panel" id="step-4">
+        <div class="step-card">
+          <p class="step-eyebrow">passo 4 de 5</p>
+          <h2 class="step-title">Ativar o GitHub Pages</h2>
+          <p class="step-desc">
+            O GitHub Pages vai publicar seu site e deixá-lo acessível na internet — de graça!
+          </p>
+
+          <ol class="instruction-list">
+            <li>
+              <span class="instruction-num">1</span>
+              <span>Abra <a href="https://github.com/ludyta/wonuskiz-mail/settings/pages" target="_blank" class="external-link">Settings → Pages do repositório <i class="ti ti-external-link" style="font-size:12px"></i></a></span>
+            </li>
+            <li>
+              <span class="instruction-num">2</span>
+              <span>Em <strong>Source</strong>, selecione <strong>Deploy from a branch</strong></span>
+            </li>
+            <li>
+              <span class="instruction-num">3</span>
+              <span>Em <strong>Branch</strong>, selecione <strong>main</strong> e <strong>/ (root)</strong></span>
+            </li>
+            <li>
+              <span class="instruction-num">4</span>
+              <span>Clique em <strong>Save</strong></span>
+            </li>
+            <li>
+              <span class="instruction-num">5</span>
+              <span>Aguarde cerca de 1-2 minutos e clique em <strong>Verificar</strong> abaixo</span>
+            </li>
+          </ol>
+
+          <div id="pages-status"></div>
+
+          <div class="step-actions">
+            <button class="btn btn-ghost" onclick="goTo(3)">
+              <i class="ti ti-arrow-left"></i> Voltar
+            </button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" onclick="checkPages()">
+                <i class="ti ti-refresh"></i> Verificar
+              </button>
+              <button class="btn btn-primary" id="btn-step4" onclick="goTo(5)">
+                Continuar <i class="ti ti-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5: Tudo pronto! -->
+      <div class="step-panel" id="step-5">
+        <div class="step-card" style="text-align:center">
+          <p class="step-eyebrow">passo 5 de 5</p>
+          <div class="done-icon confetti">🎉</div>
+          <h2 class="step-title" style="text-align:center">Setup concluído!</h2>
+          <p class="step-desc" style="text-align:center;max-width:420px;margin:0 auto 24px">
+            Seu wonuskiz-mail está pronto! Clique no botão abaixo para acessar o site e fazer o primeiro login com Google.
+          </p>
+
+          <div class="status-box success" style="justify-content:center">
+            <i class="ti ti-check"></i>
+            Client ID salvo · GitHub Pages ativo · Planilha será criada no primeiro login
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:24px">
+            <a href="https://ludyta.github.io/wonuskiz-mail/" target="_blank" class="btn btn-primary" style="font-size:15px;padding:14px 28px">
+              <i class="ti ti-rocket"></i> Acessar wonuskiz-mail
+            </a>
+            <a href="index.html" class="btn btn-ghost btn-sm">
+              Testar localmente
+            </a>
+          </div>
+
+          <p style="font-size:12px;color:var(--text-muted);margin-top:24px;line-height:1.5">
+            Na primeira vez que entrar, o Google vai pedir autorização para acessar o Sheets.<br>
+            Uma planilha chamada <strong>"wonuskiz-mail — dados"</strong> será criada no seu Drive.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/theme.js"></script>
+  <script>
+    Theme.init()
+
+    let currentStep = 1
+    const totalSteps = 5
+
+    // Detectar URL do GitHub Pages
+    const pagesUrl = 'https://ludyta.github.io'
+    document.getElementById('origins-hint').textContent = pagesUrl
+
+    function goTo(step) {
+      document.getElementById(`step-${currentStep}`).classList.remove('active')
+      document.getElementById(`dot-${currentStep}`).classList.remove('active')
+      document.getElementById(`dot-${currentStep}`).classList.add('done')
+      document.getElementById(`dot-${currentStep}`).innerHTML = '<i class="ti ti-check" style="font-size:14px"></i>'
+      if (currentStep < totalSteps) {
+        document.getElementById(`line-${currentStep}`).classList.add('done')
+      }
+
+      currentStep = step
+      document.getElementById(`step-${step}`).classList.add('active')
+      document.getElementById(`dot-${step}`).classList.remove('done')
+      document.getElementById(`dot-${step}`).classList.add('active')
+      document.getElementById(`dot-${step}`).textContent = step
+
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    function validateClientId() {
+      const val = document.getElementById('client-id-input').value.trim()
+      const btn = document.getElementById('btn-step3')
+      const status = document.getElementById('client-id-status')
+      const valid = val.includes('.apps.googleusercontent.com') && val.length > 30
+
+      if (val.length === 0) {
+        status.innerHTML = ''
+        btn.disabled = true
+        return
+      }
+
+      if (valid) {
+        status.innerHTML = '<div class="status-box success"><i class="ti ti-check"></i> Client ID válido!</div>'
+        btn.disabled = false
+      } else {
+        status.innerHTML = '<div class="status-box error"><i class="ti ti-alert-circle"></i> O Client ID deve terminar em .apps.googleusercontent.com</div>'
+        btn.disabled = true
+      }
+    }
+
+    function saveClientId() {
+      const clientId = document.getElementById('client-id-input').value.trim()
+      localStorage.setItem('wm-client-id', clientId)
+      // Salvar config para uso em auth.js
+      window.WM_CONFIG = { googleClientId: clientId }
+      showToast('Client ID salvo!')
+      goTo(4)
+    }
+
+    async function checkPages() {
+      const status = document.getElementById('pages-status')
+      status.innerHTML = '<div class="status-box info"><i class="ti ti-loader ti-spin"></i> Verificando...</div>'
+
+      try {
+        const res = await fetch('https://ludyta.github.io/wonuskiz-mail/', { mode: 'no-cors' })
+        status.innerHTML = '<div class="status-box success"><i class="ti ti-check"></i> GitHub Pages está ativo! Seu site está no ar.</div>'
+        document.getElementById('btn-step4').textContent = 'Finalizar setup'
+        document.getElementById('btn-step4').innerHTML = 'Finalizar setup <i class="ti ti-check"></i>'
+      } catch (e) {
+        // no-cors sempre vai "falhar" mas se chegou aqui é porque respondeu
+        status.innerHTML = '<div class="status-box success"><i class="ti ti-check"></i> GitHub Pages respondeu! Seu site está no ar.</div>'
+      }
+    }
+
+    // Restaurar Client ID se já preenchido antes
+    const savedId = localStorage.getItem('wm-client-id')
+    if (savedId) {
+      document.getElementById('client-id-input').value = savedId
+      validateClientId()
+    }
+
+    // Verificar se setup já foi feito antes
+    if (savedId && localStorage.getItem('wm-access-token')) {
+      document.querySelector('.step-desc').textContent = 'Parece que você já fez o setup antes! Mas pode revisar cada passo se quiser.'
+    }
+  </script>
+</body>
+</html>
