@@ -7,23 +7,17 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 </head>
-<body>
+<body class="dark">
   <div class="login-page">
-    <span class="deco" style="top:8%;left:8%;transform:rotate(-15deg)">✦</span>
-    <span class="deco" style="top:15%;right:12%;transform:rotate(10deg)">♡</span>
-    <span class="deco" style="bottom:20%;left:10%;transform:rotate(8deg);font-size:18px">⋆</span>
-    <span class="deco" style="bottom:10%;right:8%;transform:rotate(-8deg)">✦</span>
-    <span class="deco" style="top:40%;right:6%;font-size:18px">♡</span>
-
     <div class="login-card">
       <div class="login-logo">✦ wonuskiz</div>
       <p class="login-sub">seus pedidos de envio nacional, organizadinhos</p>
 
       <div id="no-setup" style="display:none;margin-bottom:20px">
-        <div style="background:var(--rose-light);border:2px solid var(--cherry-dark);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--cherry-dark);margin-bottom:16px;line-height:1.5">
+        <div style="background:var(--sf2);border:1.5px solid var(--bo);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--ts);margin-bottom:12px;line-height:1.5">
           <i class="ti ti-settings"></i> Parece que é seu primeiro acesso! Faça o setup antes de entrar.
         </div>
-        <a href="setup.html" class="btn btn-secondary" style="width:100%;justify-content:center">
+        <a href="setup.html" class="btn btn-primary" style="width:100%;justify-content:center">
           <i class="ti ti-rocket"></i> Fazer setup
         </a>
       </div>
@@ -38,7 +32,7 @@
         Entrar com Google
       </button>
 
-      <p style="font-size:12px;color:var(--text-muted);margin-top:20px;line-height:1.5">
+      <p style="font-size:12px;color:var(--ts);margin-top:20px;line-height:1.5">
         Ao entrar, você autoriza o acesso ao Google Sheets para salvar seus dados.
       </p>
     </div>
@@ -50,13 +44,7 @@
   <script src="js/auth.js"></script>
   <script>
     Theme.init()
-
-    // Se já logado, ir direto ao dashboard
-    if (Auth.isLoggedIn()) {
-      window.location.href = 'dashboard.html'
-    }
-
-    // Se não tiver Client ID configurado, mostrar aviso de setup
+    if (Auth.isLoggedIn()) window.location.href = 'dashboard.html'
     if (!Auth.CLIENT_ID) {
       document.getElementById('no-setup').style.display = 'block'
       document.getElementById('login-btn').style.opacity = '0.4'
