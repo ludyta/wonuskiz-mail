@@ -7,102 +7,91 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 </head>
-<body>
+<body class="dark">
   <nav class="navbar">
-    <a href="dashboard.html" class="navbar-logo">✦ wonuskiz</a>
+    <a href="dashboard.html" class="navbar-logo">wonuskiz <span class="navbar-badge">mail ✦</span></a>
     <div class="navbar-links">
       <a href="dashboard.html" class="navbar-link">dashboard</a>
       <a href="configuracoes.html" class="navbar-link active">configurações</a>
-      <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()">
-        <i class="ti ti-moon"></i><span>dark</span>
-      </button>
+      <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()"><i class="ti ti-sun"></i><span>light</span></button>
       <div class="navbar-avatar" onclick="Auth.logout()" title="Sair">l</div>
     </div>
   </nav>
 
-  <main class="main">
+  <div class="main">
     <div class="page-header">
-      <p class="page-eyebrow">✦ listas dos formulários ✦</p>
+      <div class="page-eyebrow">✦ listas dos formulários</div>
       <h1 class="page-title">Configurações</h1>
       <p class="page-sub">gerencie as opções que aparecem nos selects</p>
     </div>
 
     <div id="loading" class="loading"><i class="ti ti-loader ti-spin"></i> Carregando...</div>
 
-    <div id="settings-grid" class="settings-grid" style="display:none">
-
-      <div class="settings-card">
-        <div class="settings-card-header">
-          <span class="settings-card-title">Tipos de item</span>
-          <span class="settings-count" id="count-tipo_item">0</span>
+    <div id="settings-area" style="display:none;padding:0 20px 40px">
+      <div class="settings-grid">
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-card-title">Tipos de item</span>
+            <span class="settings-count" id="count-tipo_item">0</span>
+          </div>
+          <div class="settings-list" id="list-tipo_item"></div>
+          <div class="settings-add-row">
+            <input class="settings-add-input" id="add-tipo_item" placeholder="Novo tipo de item...">
+            <button class="btn btn-primary btn-sm" onclick="addItem('tipo_item')"><i class="ti ti-plus"></i></button>
+          </div>
         </div>
-        <div class="settings-list" id="list-tipo_item"></div>
-        <div class="settings-add-row">
-          <input class="settings-add-input" id="add-tipo_item" placeholder="Novo tipo de item...">
-          <button class="btn btn-primary btn-sm" onclick="addItem('tipo_item')">
-            <i class="ti ti-plus"></i> Adicionar
-          </button>
+
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-card-title">Tipos de CEG</span>
+            <span class="settings-count" id="count-tipo_ceg">0</span>
+          </div>
+          <div class="settings-list" id="list-tipo_ceg"></div>
+          <div class="settings-add-row">
+            <input class="settings-add-input" id="add-tipo_ceg" placeholder="Novo tipo de CEG...">
+            <button class="btn btn-primary btn-sm" onclick="addItem('tipo_ceg')"><i class="ti ti-plus"></i></button>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-card-title">Nomes de CEG</span>
+            <span class="settings-count" id="count-nome_ceg">0</span>
+          </div>
+          <div class="settings-list" id="list-nome_ceg"></div>
+          <div class="settings-add-row">
+            <input class="settings-add-input" id="add-nome_ceg" placeholder="Ex: Caixinha Mercari | Agosto...">
+            <button class="btn btn-primary btn-sm" onclick="addItem('nome_ceg')"><i class="ti ti-plus"></i></button>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-card-title">Nomes de set</span>
+            <span class="settings-count" id="count-nome_set">0</span>
+          </div>
+          <div class="settings-list" id="list-nome_set"></div>
+          <div class="settings-add-row">
+            <input class="settings-add-input" id="add-nome_set" placeholder="Ex: POB Aladin...">
+            <button class="btn btn-primary btn-sm" onclick="addItem('nome_set')"><i class="ti ti-plus"></i></button>
+          </div>
+        </div>
+
+        <div class="settings-card" style="grid-column:span 2">
+          <div class="settings-card-header">
+            <span class="settings-card-title">Comunidades</span>
+            <span class="settings-count" id="count-comunidade">0</span>
+          </div>
+          <div class="settings-list" id="list-comunidade"></div>
+          <div class="settings-add-row">
+            <input class="settings-add-input" id="add-comunidade" placeholder="Ex: Do It...">
+            <button class="btn btn-primary btn-sm" onclick="addItem('comunidade')"><i class="ti ti-plus"></i></button>
+          </div>
         </div>
       </div>
-
-      <div class="settings-card">
-        <div class="settings-card-header">
-          <span class="settings-card-title">Tipos de CEG</span>
-          <span class="settings-count" id="count-tipo_ceg">0</span>
-        </div>
-        <div class="settings-list" id="list-tipo_ceg"></div>
-        <div class="settings-add-row">
-          <input class="settings-add-input" id="add-tipo_ceg" placeholder="Novo tipo de CEG...">
-          <button class="btn btn-primary btn-sm" onclick="addItem('tipo_ceg')">
-            <i class="ti ti-plus"></i> Adicionar
-          </button>
-        </div>
-      </div>
-
-      <div class="settings-card">
-        <div class="settings-card-header">
-          <span class="settings-card-title">Nomes de CEG</span>
-          <span class="settings-count" id="count-nome_ceg">0</span>
-        </div>
-        <div class="settings-list" id="list-nome_ceg"></div>
-        <div class="settings-add-row">
-          <input class="settings-add-input" id="add-nome_ceg" placeholder="Ex: Caixinha Mercari | Agosto...">
-          <button class="btn btn-primary btn-sm" onclick="addItem('nome_ceg')">
-            <i class="ti ti-plus"></i> Adicionar
-          </button>
-        </div>
-      </div>
-
-      <div class="settings-card">
-        <div class="settings-card-header">
-          <span class="settings-card-title">Nomes de set</span>
-          <span class="settings-count" id="count-nome_set">0</span>
-        </div>
-        <div class="settings-list" id="list-nome_set"></div>
-        <div class="settings-add-row">
-          <input class="settings-add-input" id="add-nome_set" placeholder="Ex: POB Aladin...">
-          <button class="btn btn-primary btn-sm" onclick="addItem('nome_set')">
-            <i class="ti ti-plus"></i> Adicionar
-          </button>
-        </div>
-      </div>
-
-      <div class="settings-card" style="grid-column:span 2">
-        <div class="settings-card-header">
-          <span class="settings-card-title">Comunidades</span>
-          <span class="settings-count" id="count-comunidade">0</span>
-        </div>
-        <div class="settings-list" id="list-comunidade"></div>
-        <div class="settings-add-row">
-          <input class="settings-add-input" id="add-comunidade" placeholder="Ex: Do It...">
-          <button class="btn btn-primary btn-sm" onclick="addItem('comunidade')">
-            <i class="ti ti-plus"></i> Adicionar
-          </button>
-        </div>
-      </div>
-
     </div>
-  </main>
+    <div class="orn">✦ &nbsp; wonuskiz mail &nbsp; ♡</div>
+  </div>
 
   <script src="js/utils.js"></script>
   <script src="js/theme.js"></script>
@@ -111,22 +100,19 @@
   <script>
     Theme.init()
     if (!Auth.requireAuth()) throw new Error('Not authenticated')
-
     let config = {}
 
     async function load() {
       config = await Sheets.getConfig()
       document.getElementById('loading').style.display = 'none'
-      document.getElementById('settings-grid').style.display = 'grid'
-      const types = ['tipo_item', 'tipo_ceg', 'nome_ceg', 'nome_set', 'comunidade']
-      types.forEach(renderList)
+      document.getElementById('settings-area').style.display = 'block'
+      ;['tipo_item','tipo_ceg','nome_ceg','nome_set','comunidade'].forEach(renderList)
     }
 
     function renderList(tipo) {
       const items = config[tipo] || []
       document.getElementById(`count-${tipo}`).textContent = items.length
-      const list = document.getElementById(`list-${tipo}`)
-      list.innerHTML = items.map((val, i) => `
+      document.getElementById(`list-${tipo}`).innerHTML = items.map((val, i) => `
         <div class="settings-item" id="item-${tipo}-${i}">
           <span class="settings-item-name">${val}</span>
           <input class="settings-item-input" value="${val}" onkeydown="if(event.key==='Enter')saveEdit('${tipo}',${i},'${val}')">
@@ -138,16 +124,13 @@
               <i class="ti ti-trash"></i>
             </button>
           </div>
-        </div>
-      `).join('')
+        </div>`).join('')
     }
 
     function toggleEdit(tipo, idx, oldVal) {
       const item = document.getElementById(`item-${tipo}-${idx}`)
-      const isEditing = item.classList.contains('editing')
-      if (isEditing) {
-        saveEdit(tipo, idx, oldVal)
-      } else {
+      if (item.classList.contains('editing')) { saveEdit(tipo, idx, oldVal) }
+      else {
         item.classList.add('editing')
         item.querySelector('.settings-item-input').focus()
         document.getElementById(`edit-icon-${tipo}-${idx}`).className = 'ti ti-check'
@@ -164,9 +147,7 @@
         config[tipo][idx] = newVal
         showToast('Atualizado!')
         renderList(tipo)
-      } catch (e) {
-        showToast('Erro ao atualizar', 'error')
-      }
+      } catch(e) { showToast('Erro ao atualizar', 'error') }
     }
 
     async function addItem(tipo) {
@@ -180,24 +161,19 @@
         input.value = ''
         renderList(tipo)
         showToast('Adicionado!')
-      } catch (e) {
-        showToast('Erro ao adicionar', 'error')
-      }
+      } catch(e) { showToast('Erro ao adicionar', 'error') }
     }
 
     async function deleteItem(tipo, val) {
-      if (!confirm(`Remover "${val}" de ${tipo.replace('_',' ')}?`)) return
+      if (!confirm(`Remover "${val}"?`)) return
       try {
         await Sheets.deleteConfigItem(tipo, val)
         config[tipo] = config[tipo].filter(v => v !== val)
         renderList(tipo)
         showToast('Removido!')
-      } catch (e) {
-        showToast('Erro ao remover', 'error')
-      }
+      } catch(e) { showToast('Erro ao remover', 'error') }
     }
 
-    // Enter nas inputs de adicionar
     document.addEventListener('DOMContentLoaded', () => {
       ['tipo_item','tipo_ceg','nome_ceg','nome_set','comunidade'].forEach(tipo => {
         const inp = document.getElementById(`add-${tipo}`)
