@@ -7,89 +7,114 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 </head>
-<body>
+<body class="dark">
+
   <nav class="navbar">
-    <a href="dashboard.html" class="navbar-logo">✦ wonuskiz</a>
+    <a href="dashboard.html" class="navbar-logo">
+      wonuskiz <span class="navbar-badge">mail ✦</span>
+    </a>
     <div class="navbar-links">
       <a href="dashboard.html" class="navbar-link active">dashboard</a>
       <a href="configuracoes.html" class="navbar-link">configurações</a>
       <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()">
-        <i class="ti ti-moon"></i><span>dark</span>
+        <i class="ti ti-sun"></i><span>light</span>
       </button>
       <div class="navbar-avatar" id="user-avatar" onclick="Auth.logout()" title="Sair">l</div>
     </div>
   </nav>
 
-  <main class="main">
-    <div class="header-row">
-      <div class="page-header">
-        <p class="page-eyebrow">✦ seus envios nacionais ✦</p>
-        <h1 class="page-title">Pedidos de envio</h1>
-        <p class="page-sub">caixinhas acumuladas, prontas pra pedir</p>
-      </div>
-      <div class="header-actions">
-        <div class="view-toggle">
-          <button class="vt-btn active" id="btn-cards" title="Cards">
-            <i class="ti ti-layout-grid"></i>
-          </button>
-          <button class="vt-btn" id="btn-table" title="Tabela">
-            <i class="ti ti-layout-list"></i>
-          </button>
-        </div>
-        <a href="nova-caixinha.html" class="btn btn-primary">
-          <i class="ti ti-plus"></i> Nova caixinha
-        </a>
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span class="ticker-item">wonuskiz mail</span><span class="ticker-sep">✦</span>
+      <span class="ticker-item">kpop cegs</span><span class="ticker-sep">♡</span>
+      <span class="ticker-item">envios nacionais</span><span class="ticker-sep">✦</span>
+      <span class="ticker-item">seus photocards chegando</span><span class="ticker-sep">♡</span>
+      <span class="ticker-item">wonuskiz mail</span><span class="ticker-sep">✦</span>
+      <span class="ticker-item">kpop cegs</span><span class="ticker-sep">♡</span>
+      <span class="ticker-item">envios nacionais</span><span class="ticker-sep">✦</span>
+      <span class="ticker-item">seus photocards chegando</span><span class="ticker-sep">♡</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-glow" style="width:280px;height:280px;background:rgba(108,97,155,.2);top:-80px;right:-60px;position:absolute"></div>
+      <div class="hero-glow" style="width:180px;height:180px;background:rgba(205,132,114,.15);bottom:0;left:5%;position:absolute"></div>
+      <div class="hero-eyebrow">seus envios nacionais</div>
+      <h1 class="hero-title">wonuskiz</h1>
+      <span class="hero-script">envio nacional</span>
+      <div class="hero-actions">
+        <div class="hero-chip" id="chip-caixinhas"><i class="ti ti-package" style="font-size:11px"></i> — caixinhas</div>
+        <div class="hero-chip" id="chip-transito"><i class="ti ti-truck-delivery" style="font-size:11px"></i> — em trânsito</div>
+        <div class="hero-chip" id="chip-itens"><i class="ti ti-photo" style="font-size:11px"></i> — itens</div>
+        <a href="nova-caixinha.html" class="btn btn-primary"><i class="ti ti-plus"></i> nova caixinha</a>
       </div>
     </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Total de caixinhas</div>
+    <!-- STATS -->
+    <div class="stats-band">
+      <div class="stat-item">
+        <div class="stat-label">caixinhas</div>
         <div class="stat-value" id="stat-total">—</div>
+        <span class="stat-sub">total</span>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Em trânsito</div>
+      <div class="stat-item">
+        <div class="stat-label">em trânsito</div>
         <div class="stat-value" id="stat-transit">—</div>
+        <span class="stat-sub">agora</span>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Itens acumulados</div>
+      <div class="stat-item">
+        <div class="stat-label">itens</div>
         <div class="stat-value" id="stat-items">—</div>
+        <span class="stat-sub">acumulados</span>
       </div>
     </div>
 
-    <div id="loading" class="loading">
-      <i class="ti ti-loader ti-spin"></i> Carregando caixinhas...
-    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-label">suas caixinhas</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="view-toggle">
+            <button class="vt-btn active" id="btn-cards" title="Pastas"><i class="ti ti-layout-grid"></i></button>
+            <button class="vt-btn" id="btn-table" title="Tabela"><i class="ti ti-layout-list"></i></button>
+          </div>
+        </div>
+      </div>
 
-    <!-- CARDS VIEW -->
-    <div id="cards-view" class="cards-grid" style="display:none"></div>
+      <div id="loading" class="loading"><i class="ti ti-loader ti-spin"></i> Carregando caixinhas...</div>
 
-    <!-- TABLE VIEW -->
-    <div id="table-view" class="table-wrap" style="display:none">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Caixinha</th>
-            <th>Comunidade</th>
-            <th>Data do pedido</th>
-            <th>Itens</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-      </table>
-    </div>
+      <!-- FOLDERS VIEW -->
+      <div id="cards-view" class="folders-grid" style="display:none"></div>
 
-    <div id="empty-state" class="empty-state" style="display:none">
-      <div class="empty-icon"><i class="ti ti-package"></i></div>
-      <div class="empty-title">Nenhuma caixinha ainda</div>
-      <div class="empty-sub">Crie sua primeira caixinha de envio nacional!</div>
-      <a href="nova-caixinha.html" class="btn btn-primary">
-        <i class="ti ti-plus"></i> Nova caixinha
-      </a>
+      <!-- TABLE VIEW -->
+      <div id="table-view" class="table-wrap h">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Caixinha</th>
+              <th>Comunidade</th>
+              <th>Data do pedido</th>
+              <th>Itens</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+
+      <div id="empty-state" class="empty-state" style="display:none">
+        <div class="empty-icon"><i class="ti ti-package"></i></div>
+        <div class="empty-title">Nenhuma caixinha ainda</div>
+        <div class="empty-sub">Crie sua primeira caixinha de envio nacional!</div>
+        <a href="nova-caixinha.html" class="btn btn-primary"><i class="ti ti-plus"></i> Nova caixinha</a>
+      </div>
+
+      <div class="orn">✦ &nbsp; wonuskiz mail &nbsp; ♡</div>
     </div>
-  </main>
+  </div>
 
   <script src="js/utils.js"></script>
   <script src="js/theme.js"></script>
@@ -99,13 +124,68 @@
     Theme.init()
     if (!Auth.requireAuth()) throw new Error('Not authenticated')
 
+    const STATUS_CFG = {
+      accumulating: { label: 'Acumulando', cls: 'stamp-accumulating', tab: '#4d3a75', body: 'linear-gradient(145deg,#3d2d60,#2d2050)' },
+      posted:       { label: 'Postado',     cls: 'stamp-posted',       tab: '#9892c8', body: 'linear-gradient(145deg,#9892c8,#8880b0)' },
+      transit:      { label: 'Em trânsito', cls: 'stamp-transit',      tab: '#8B7BC0', body: 'linear-gradient(145deg,#6C619B,#5a5088)' },
+      received:     { label: 'Recebido',    cls: 'stamp-received',     tab: '#E8957A', body: 'linear-gradient(145deg,#CD8472,#b5705e)' },
+    }
+
+    const PC_COLORS = {
+      accumulating: ['#2a1f45','#1e1535','#16102a'],
+      posted:       ['#1a2050','#0f1630','#2a3070'],
+      transit:      ['#3d2060','#2a1f50','#5a3090','#4a2880'],
+      received:     ['#7a3830','#5c2820','#8a4038','#6a3028'],
+    }
+
     let caixinhas = []
     let itensCount = {}
+
+    function renderFolderCard(c) {
+      const qtd = itensCount[c.id] || 0
+      const cfg = STATUS_CFG[c.status] || STATUS_CFG.accumulating
+      const colors = PC_COLORS[c.status] || PC_COLORS.accumulating
+
+      const pcs = colors.slice(0, Math.min(colors.length, qtd > 0 ? 4 : 2))
+      const positions = [
+        {left:'4px',  rotation:-12, z:1},
+        {left:'28px', rotation:-3,  z:2},
+        {left:'52px', rotation:7,   z:3},
+        {right:'2px', rotation:16,  z:2, small:true},
+      ]
+
+      let pilesHTML = pcs.map((color, i) => {
+        const pos = positions[i] || positions[0]
+        const w = pos.small ? '36px' : '50px'
+        const h = pos.small ? '52px' : '70px'
+        const posStyle = pos.right ? `right:${pos.right}` : `left:${pos.left}`
+        const isDashed = c.status === 'accumulating' && i === pcs.length - 1 && qtd < 3
+        return `<div class="photocard" style="width:${w};height:${h};bottom:0;${posStyle};transform:rotate(${pos.rotation}deg);z-index:${pos.z};background:${color};${isDashed ? 'border-style:dashed;opacity:.6' : ''}">
+          <div class="photocard-placeholder">${isDashed ? '+' : '<i class="ti ti-photo"></i>'}</div>
+        </div>`
+      }).join('')
+
+      return `
+        <div class="folder-card" onclick="location.href='caixinha.html?id=${c.id}'">
+          <div class="folder-tab" style="background:${cfg.tab}"></div>
+          <div class="folder-body" style="background:${cfg.body}">
+            <div class="folder-pile">${pilesHTML}</div>
+            <div>
+              <span class="stamp ${cfg.cls}">${cfg.label}</span>
+              <div class="folder-name">${c.nome}</div>
+              <div class="folder-meta">
+                <span class="folder-date">${c.comunidade || ''} · ${formatDate(c.data_pedido)}</span>
+                <span class="folder-count">${qtd} ${qtd === 1 ? 'item' : 'itens'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+    }
 
     async function loadDashboard() {
       try {
         caixinhas = await Sheets.getCaixinhas()
-        // Contar itens por caixinha
         const todosItens = await Sheets.getRange('Itens', 'A2:B1000')
         todosItens.filter(r => r[0]).forEach(r => {
           itensCount[r[1]] = (itensCount[r[1]] || 0) + 1
@@ -113,94 +193,69 @@
 
         document.getElementById('loading').style.display = 'none'
 
-        if (caixinhas.length === 0) {
+        const total = caixinhas.length
+        const transit = caixinhas.filter(c => c.status === 'transit').length
+        const items = Object.values(itensCount).reduce((a,b) => a+b, 0)
+
+        document.getElementById('stat-total').textContent = total
+        document.getElementById('stat-transit').textContent = transit
+        document.getElementById('stat-items').textContent = items
+        document.getElementById('chip-caixinhas').innerHTML = `<i class="ti ti-package" style="font-size:11px"></i> ${total} caixinhas`
+        document.getElementById('chip-transito').innerHTML = `<i class="ti ti-truck-delivery" style="font-size:11px"></i> ${transit} em trânsito`
+        document.getElementById('chip-itens').innerHTML = `<i class="ti ti-photo" style="font-size:11px"></i> ${items} itens`
+
+        if (total === 0) {
           document.getElementById('empty-state').style.display = 'block'
-          document.getElementById('stat-total').textContent = '0'
-          document.getElementById('stat-transit').textContent = '0'
-          document.getElementById('stat-items').textContent = '0'
           return
         }
 
-        // Stats
-        document.getElementById('stat-total').textContent = caixinhas.length
-        document.getElementById('stat-transit').textContent = caixinhas.filter(c => c.status === 'transit').length
-        document.getElementById('stat-items').textContent = Object.values(itensCount).reduce((a,b) => a+b, 0)
+        // Folders
+        const cardsView = document.getElementById('cards-view')
+        cardsView.innerHTML = caixinhas.map(renderFolderCard).join('')
+        cardsView.style.display = 'grid'
 
-        renderCards()
-        renderTable()
-        setupViewToggle(
-          document.getElementById('btn-cards'),
-          document.getElementById('btn-table'),
-          document.getElementById('cards-view'),
-          document.getElementById('table-view')
-        )
-      } catch (e) {
+        // Table
+        const tbody = document.getElementById('table-body')
+        tbody.innerHTML = caixinhas.map(c => {
+          const qtd = itensCount[c.id] || 0
+          const cfg = STATUS_CFG[c.status] || STATUS_CFG.accumulating
+          return `<tr>
+            <td><div class="td-name">${c.nome}</div><div class="td-sub">${c.comunidade || ''}</div></td>
+            <td style="color:var(--ts)">${c.comunidade || '—'}</td>
+            <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--ts)">${formatDate(c.data_pedido)}</td>
+            <td style="color:var(--ts)">${qtd} itens</td>
+            <td><span class="stamp ${cfg.cls}" style="transform:none">${cfg.label}</span></td>
+            <td><div style="display:flex;gap:5px">
+              <button class="icon-btn" onclick="event.stopPropagation();location.href='caixinha.html?id=${c.id}'" title="Ver"><i class="ti ti-eye"></i></button>
+              <button class="icon-btn" onclick="event.stopPropagation();location.href='nova-caixinha.html?id=${c.id}'" title="Editar"><i class="ti ti-edit"></i></button>
+            </div></td>
+          </tr>`
+        }).join('')
+
+        // View toggle
+        const bc = document.getElementById('btn-cards')
+        const bt = document.getElementById('btn-table')
+        const cv = document.getElementById('cards-view')
+        const tv = document.getElementById('table-view')
+
+        bc.addEventListener('click', () => {
+          cv.style.display = 'grid'; tv.classList.add('h')
+          bc.classList.add('active'); bt.classList.remove('active')
+          localStorage.setItem('wm-view', 'cards')
+        })
+        bt.addEventListener('click', () => {
+          cv.style.display = 'none'; tv.classList.remove('h')
+          bt.classList.add('active'); bc.classList.remove('active')
+          localStorage.setItem('wm-view', 'table')
+        })
+
+        if (localStorage.getItem('wm-view') === 'table') bt.click()
+
+      } catch(e) {
         console.error(e)
         document.getElementById('loading').innerHTML = '<i class="ti ti-alert-circle"></i> Erro ao carregar dados'
         showToast('Erro ao carregar dados', 'error')
       }
-    }
-
-    function renderCards() {
-      const container = document.getElementById('cards-view')
-      container.innerHTML = caixinhas.map(c => {
-        const qtd = itensCount[c.id] || 0
-        return `
-          <div class="caixinha-card">
-            ${statusStamp(c.status)}
-            <div class="card-name">${c.nome}</div>
-            <div class="card-meta">
-              <div class="card-meta-row">
-                <span class="card-meta-label">Comunidade</span>
-                <span class="card-meta-val">${c.comunidade || '—'}</span>
-              </div>
-              <div class="card-meta-row">
-                <span class="card-meta-label">Data do pedido</span>
-                <span class="card-meta-val">${formatDate(c.data_pedido)}</span>
-              </div>
-              <div class="card-meta-row">
-                <span class="card-meta-label">Itens</span>
-                <span class="card-meta-val">${qtd} ${qtd === 1 ? 'item' : 'itens'}</span>
-              </div>
-            </div>
-            <div class="card-foot">
-              <button class="icon-btn" onclick="location.href='caixinha.html?id=${c.id}'" title="Ver caixinha">
-                <i class="ti ti-eye"></i>
-              </button>
-              <button class="icon-btn" onclick="location.href='nova-caixinha.html?id=${c.id}'" title="Editar">
-                <i class="ti ti-edit"></i>
-              </button>
-            </div>
-          </div>
-        `
-      }).join('')
-    }
-
-    function renderTable() {
-      const tbody = document.getElementById('table-body')
-      tbody.innerHTML = caixinhas.map(c => {
-        const qtd = itensCount[c.id] || 0
-        return `
-          <tr>
-            <td>
-              <div class="td-name">${c.nome}</div>
-              <div class="td-sub">${c.comunidade || ''}</div>
-            </td>
-            <td>${c.comunidade || '—'}</td>
-            <td>${formatDate(c.data_pedido)}</td>
-            <td>${qtd} ${qtd === 1 ? 'item' : 'itens'}</td>
-            <td>${statusBadge(c.status)}</td>
-            <td style="display:flex;gap:6px">
-              <button class="icon-btn" onclick="location.href='caixinha.html?id=${c.id}'" title="Ver">
-                <i class="ti ti-eye"></i>
-              </button>
-              <button class="icon-btn" onclick="location.href='nova-caixinha.html?id=${c.id}'" title="Editar">
-                <i class="ti ti-edit"></i>
-              </button>
-            </td>
-          </tr>
-        `
-      }).join('')
     }
 
     loadDashboard()
