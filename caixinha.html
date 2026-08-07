@@ -7,20 +7,18 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 </head>
-<body>
+<body class="dark">
   <nav class="navbar">
-    <a href="dashboard.html" class="navbar-logo">✦ wonuskiz</a>
+    <a href="dashboard.html" class="navbar-logo">wonuskiz <span class="navbar-badge">mail ✦</span></a>
     <div class="navbar-links">
       <a href="dashboard.html" class="navbar-link">dashboard</a>
       <a href="configuracoes.html" class="navbar-link">configurações</a>
-      <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()">
-        <i class="ti ti-moon"></i><span>dark</span>
-      </button>
+      <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()"><i class="ti ti-sun"></i><span>light</span></button>
       <div class="navbar-avatar" onclick="Auth.logout()" title="Sair">l</div>
     </div>
   </nav>
 
-  <main class="main">
+  <div class="main">
     <div class="breadcrumb">
       <a href="dashboard.html">dashboard</a>
       <span class="breadcrumb-sep">›</span>
@@ -29,80 +27,62 @@
 
     <div id="loading" class="loading"><i class="ti ti-loader ti-spin"></i> Carregando...</div>
 
-    <!-- HEADER -->
-    <div id="caixinha-header" class="caixinha-page-header" style="display:none">
-      <div class="caixinha-page-top">
-        <div>
-          <div class="caixinha-community" id="h-comunidade"></div>
-          <div class="caixinha-page-title" id="h-nome"></div>
-          <span id="h-badge"></span>
+    <!-- HEADER DA CAIXINHA -->
+    <div id="caixinha-header" style="display:none">
+      <div class="gom-hero">
+        <div class="gom-owner" id="h-comunidade"></div>
+        <div class="gom-title" id="h-nome"></div>
+        <div class="gom-chips" id="h-chips"></div>
+      </div>
+
+      <div class="stats-band">
+        <div class="stat-item">
+          <div class="stat-label">pedido em</div>
+          <div class="stat-value" id="h-data-pedido" style="font-size:14px;padding-top:5px;font-weight:700;letter-spacing:0">—</div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <button class="btn btn-ghost btn-sm" onclick="copyPublicLink()">
-            <i class="ti ti-copy"></i> Copiar link
-          </button>
-          <a href="#" id="edit-link" class="btn btn-ghost btn-sm">
-            <i class="ti ti-edit"></i> Editar
-          </a>
-          <a href="#" id="new-item-link" class="btn btn-primary btn-sm">
-            <i class="ti ti-plus"></i> Novo item
-          </a>
+        <div class="stat-item">
+          <div class="stat-label">transportadora</div>
+          <div class="stat-value" id="h-transportadora" style="font-size:13px;padding-top:6px;font-weight:700;letter-spacing:0">—</div>
+          <span class="stat-sub" id="h-rastreio"></span>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">status</div>
+          <div id="h-status" style="padding-top:8px"></div>
         </div>
       </div>
-      <div class="caixinha-meta">
-        <div class="caixinha-meta-item">
-          <span class="caixinha-meta-label">Data do pedido</span>
-          <span class="caixinha-meta-val" id="h-data-pedido"></span>
-        </div>
-        <div class="caixinha-meta-item">
-          <span class="caixinha-meta-label">Data de envio</span>
-          <span class="caixinha-meta-val" id="h-data-envio"></span>
-        </div>
-        <div class="caixinha-meta-item">
-          <span class="caixinha-meta-label">Transportadora</span>
-          <span class="caixinha-meta-val" id="h-transportadora"></span>
-        </div>
-        <div class="caixinha-meta-item" id="rastreio-item">
-          <span class="caixinha-meta-label">Rastreio</span>
-          <span class="caixinha-meta-val mono" id="h-rastreio"></span>
-        </div>
-        <div class="caixinha-meta-item">
-          <span class="caixinha-meta-label">Itens</span>
-          <span class="caixinha-meta-val" id="h-itens"></span>
-        </div>
+
+      <div style="padding:12px 20px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--bo)">
+        <button class="btn btn-ghost btn-sm" onclick="copyPublicLink()"><i class="ti ti-copy"></i> Copiar link público</button>
+        <a href="#" id="edit-link" class="btn btn-ghost btn-sm"><i class="ti ti-edit"></i> Editar caixinha</a>
+        <a href="#" id="new-item-link" class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Novo item</a>
       </div>
     </div>
 
-    <!-- TYPE CHIPS -->
-    <div id="type-chips" class="type-chips" style="display:none"></div>
-
-    <!-- VIEW TOGGLE ITEMS -->
-    <div id="item-controls" style="display:none;margin-bottom:16px">
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-sm active" id="btn-acc" onclick="setItemView('acc')" style="border:2px solid var(--cherry-dark)">
-          <i class="ti ti-layout-list"></i> Categorizado
-        </button>
-        <button class="btn btn-ghost btn-sm" id="btn-grid" onclick="setItemView('grid')">
-          <i class="ti ti-layout-grid"></i> Grade
-        </button>
+    <div class="section" id="items-section" style="display:none">
+      <div class="section-header">
+        <div class="section-label">itens da caixinha</div>
+        <div class="view-toggle">
+          <button class="vt-btn active" id="btn-acc" onclick="setView('acc')"><i class="ti ti-layout-list"></i></button>
+          <button class="vt-btn" id="btn-grid" onclick="setView('grid')"><i class="ti ti-layout-grid"></i></button>
+        </div>
       </div>
+
+      <!-- ACCORDION -->
+      <div id="acc-view"></div>
+
+      <!-- GRADE -->
+      <div id="grid-view" class="items-grid h"></div>
     </div>
-
-    <!-- ACCORDION VIEW -->
-    <div id="acc-view" class="acc-list" style="display:none"></div>
-
-    <!-- GRID VIEW -->
-    <div id="grid-view" class="items-grid" style="display:none"></div>
 
     <div id="empty-items" class="empty-state" style="display:none">
       <div class="empty-icon"><i class="ti ti-photo"></i></div>
       <div class="empty-title">Nenhum item ainda</div>
       <div class="empty-sub">Adicione os primeiros itens desta caixinha!</div>
-      <a href="#" id="empty-new-item" class="btn btn-primary">
-        <i class="ti ti-plus"></i> Novo item
-      </a>
+      <a href="#" id="empty-new-item" class="btn btn-primary"><i class="ti ti-plus"></i> Novo item</a>
     </div>
-  </main>
+
+    <div class="orn">✦ &nbsp; wonuskiz mail &nbsp; ♡</div>
+  </div>
 
   <script src="js/utils.js"></script>
   <script src="js/theme.js"></script>
@@ -111,78 +91,69 @@
   <script>
     Theme.init()
     if (!Auth.requireAuth()) throw new Error('Not authenticated')
-
     const params = new URLSearchParams(location.search)
     const caixinhaId = params.get('id')
-    if (!caixinhaId) { location.href = 'dashboard.html' }
+    if (!caixinhaId) location.href = 'dashboard.html'
 
-    let caixinha = null
-    let itens = []
-    let currentView = localStorage.getItem('wm-item-view') || 'acc'
+    const STATUS_CFG = {
+      accumulating: { label: 'Acumulando', cls: 'stamp-accumulating' },
+      posted:       { label: 'Postado',    cls: 'stamp-posted' },
+      transit:      { label: 'Em trânsito',cls: 'stamp-transit' },
+      received:     { label: 'Recebido',   cls: 'stamp-received' },
+    }
+
+    let caixinha, itens = [], currentView = localStorage.getItem('wm-item-view') || 'acc'
 
     async function load() {
       try {
         caixinha = await Sheets.getCaixinha(caixinhaId)
         itens = await Sheets.getItens(caixinhaId)
-
         if (!caixinha) { location.href = 'dashboard.html'; return }
 
         document.getElementById('loading').style.display = 'none'
         document.getElementById('bc-nome').textContent = caixinha.nome
         document.title = caixinha.nome + ' — wonuskiz-mail'
 
-        renderHeader()
+        // Header
+        const cfg = STATUS_CFG[caixinha.status] || STATUS_CFG.accumulating
+        document.getElementById('h-comunidade').textContent = (caixinha.comunidade || '') + ' ✦'
+        document.getElementById('h-nome').textContent = caixinha.nome
+        document.getElementById('h-data-pedido').textContent = formatDate(caixinha.data_pedido)
+        document.getElementById('h-transportadora').textContent = caixinha.transportadora || '—'
+        document.getElementById('h-rastreio').textContent = caixinha.codigo_rastreio || ''
+        document.getElementById('h-status').innerHTML = `<span class="stamp ${cfg.cls}">${cfg.label}</span>`
+        document.getElementById('edit-link').href = `nova-caixinha.html?id=${caixinhaId}`
+        document.getElementById('new-item-link').href = `novo-item.html?caixinha_id=${caixinhaId}`
+        document.getElementById('empty-new-item').href = `novo-item.html?caixinha_id=${caixinhaId}`
+
+        // Type chips
+        const tipoCounts = {}
+        itens.forEach(i => { tipoCounts[i.tipo_item] = (tipoCounts[i.tipo_item] || 0) + (i.quantidade || 1) })
+        const cegsUnicas = new Set(itens.map(i => i.nome_ceg)).size
+        document.getElementById('h-chips').innerHTML =
+          Object.entries(tipoCounts).map(([t,q]) => `<div class="gom-chip"><strong>${q}</strong> ${t}${q>1?'s':''}</div>`).join('') +
+          `<div class="gom-chip"><strong>${cegsUnicas}</strong> CEG${cegsUnicas!==1?'s':''}</div>`
+
+        document.getElementById('caixinha-header').style.display = 'block'
 
         if (itens.length === 0) {
           document.getElementById('empty-items').style.display = 'block'
-          document.getElementById('empty-new-item').href = `novo-item.html?caixinha_id=${caixinhaId}`
           return
         }
 
-        document.getElementById('item-controls').style.display = 'flex'
-        renderTypeChips()
+        document.getElementById('items-section').style.display = 'block'
         renderAcc()
         renderGrid()
-        setItemView(currentView)
+        setView(currentView)
 
-        // Rastreamento Correios
-        if (caixinha.transportadora === 'Correios' && caixinha.codigo_rastreio) {
-          loadRastreamento()
-        }
-      } catch (e) {
+        if (caixinha.transportadora === 'Correios' && caixinha.codigo_rastreio) loadRastreamento()
+      } catch(e) {
         console.error(e)
         document.getElementById('loading').innerHTML = '<i class="ti ti-alert-circle"></i> Erro ao carregar'
       }
     }
 
-    function renderHeader() {
-      document.getElementById('caixinha-header').style.display = 'block'
-      document.getElementById('h-comunidade').textContent = caixinha.comunidade || ''
-      document.getElementById('h-nome').textContent = caixinha.nome
-      document.getElementById('h-badge').outerHTML = statusStamp(caixinha.status)
-      document.getElementById('h-data-pedido').textContent = formatDate(caixinha.data_pedido)
-      document.getElementById('h-data-envio').textContent = formatDate(caixinha.data_envio)
-      document.getElementById('h-transportadora').textContent = caixinha.transportadora || '—'
-      document.getElementById('h-rastreio').textContent = caixinha.codigo_rastreio || '—'
-      document.getElementById('edit-link').href = `nova-caixinha.html?id=${caixinhaId}`
-      document.getElementById('new-item-link').href = `novo-item.html?caixinha_id=${caixinhaId}`
-
-      // Resumo de tipos
-      const tipoCounts = {}
-      itens.forEach(i => { tipoCounts[i.tipo_item] = (tipoCounts[i.tipo_item] || 0) + (i.quantidade || 1) })
-      document.getElementById('h-itens').textContent = Object.entries(tipoCounts).map(([t,q]) => `${q} ${t}${q>1?'s':''}`).join(' · ') || `${itens.length} itens`
-    }
-
-    function renderTypeChips() {
-      const tipoCounts = {}
-      itens.forEach(i => { tipoCounts[i.tipo_item] = (tipoCounts[i.tipo_item] || 0) + (i.quantidade || 1) })
-      const el = document.getElementById('type-chips')
-      el.style.display = 'flex'
-      el.innerHTML = Object.entries(tipoCounts).map(([t,q]) => `<div class="type-chip"><strong>${q}</strong> ${t}${q>1?'s':''}</div>`).join('')
-    }
-
     function groupItens() {
-      // Agrupar: tipo_ceg → nome_ceg → nome_set → itens
       const groups = {}
       itens.forEach(item => {
         const ceg = item.tipo_ceg || 'Outros'
@@ -196,113 +167,107 @@
       return groups
     }
 
-    function itemCardHTML(item) {
-      const checked = item.separado ? 'checked' : ''
+    function itemCardHTML(item, showCheck = true) {
       return `
-        <div class="item-card" id="item-${item.id}">
+        <div class="item-card">
           <div class="item-img">
             ${item.foto_url ? `<img src="${item.foto_url}" alt="foto">` : '<i class="ti ti-photo"></i>'}
           </div>
           <div class="item-info">
-            <span class="item-type">${item.tipo_item}</span>
-            <span class="item-ref">${item.linha_ref || '—'}</span>
-            <span class="item-claim">${item.claim || item.nome_set}</span>
-            <span class="item-qty">Qtd: ${item.quantidade || 1}</span>
+            <div class="item-type">${item.tipo_item}</div>
+            <div class="item-ref">${item.linha_ref || '—'}</div>
+            <div class="item-claim">${item.claim || item.nome_set}</div>
           </div>
+          ${showCheck ? `
           <div class="item-foot">
-            <div class="check-box ${checked}" onclick="toggleCheck('${item.id}', this)" title="Separado"></div>
-            <span class="check-label">Separado</span>
-            <a href="novo-item.html?id=${item.id}&caixinha_id=${caixinhaId}" style="margin-left:auto;color:var(--text-muted);font-size:13px" title="Editar">
+            <div class="check-box ${item.separado ? 'checked' : ''}" onclick="toggleCheck('${item.id}', this)"></div>
+            <span class="check-label">sep.</span>
+            <a href="novo-item.html?id=${item.id}&caixinha_id=${caixinhaId}" style="margin-left:auto;color:var(--ts);font-size:13px" title="Editar">
               <i class="ti ti-edit"></i>
             </a>
-          </div>
-        </div>
-      `
+          </div>` : ''}
+        </div>`
     }
 
     function renderAcc() {
       const groups = groupItens()
       const container = document.getElementById('acc-view')
       container.innerHTML = ''
-
       Object.entries(groups).forEach(([tipoCeg, nomes]) => {
         Object.entries(nomes).forEach(([nomeCeg, sets]) => {
           const allItems = Object.values(sets).flat()
-          const thumbs = allItems.slice(0, 4).map(i =>
+          const thumbs = allItems.slice(0,4).map(i =>
             `<div class="acc-thumb">${i.foto_url ? `<img src="${i.foto_url}">` : '<i class="ti ti-photo"></i>'}</div>`
           ).join('')
-          const more = allItems.length > 4 ? `<span class="acc-more">+${allItems.length - 4}</span>` : ''
-
+          const more = allItems.length > 4 ? `<span class="acc-more">+${allItems.length-4}</span>` : ''
           const subsecs = Object.entries(sets).map(([setName, setItems]) => `
             <div class="subsec">
               <div class="subsec-label">${setName} <span class="subsec-count">${setItems.length}</span></div>
-              <div class="items-grid">${setItems.map(itemCardHTML).join('')}</div>
-            </div>
-          `).join('')
-
-          const accItem = document.createElement('div')
-          accItem.className = 'acc-item'
-          accItem.innerHTML = `
-            <div class="acc-header">
+              <div class="items-grid">${setItems.map(i => itemCardHTML(i)).join('')}</div>
+            </div>`).join('')
+          const el = document.createElement('div')
+          el.className = 'acc-item'
+          el.innerHTML = `
+            <div class="acc-header" onclick="toggleAccItem(this)">
               <div class="acc-header-left">
-                <div class="acc-title-row">
-                  <span class="acc-ceg-tag">${tipoCeg}</span>
-                  <span class="acc-title">${nomeCeg}</span>
-                </div>
+                <div class="acc-ceg-tag">${tipoCeg}</div>
+                <div class="acc-title">${nomeCeg}</div>
                 <div class="acc-preview">${thumbs}${more}</div>
               </div>
               <div class="acc-header-right">
                 <span class="acc-count">${allItems.length} itens</span>
-                <span class="acc-arrow"><i class="ti ti-chevron-down"></i></span>
+                <i class="ti ti-chevron-down acc-arrow"></i>
               </div>
             </div>
-            <div class="acc-body">${subsecs}</div>
-          `
-          setupAccordion(accItem.querySelector('.acc-header'))
-          container.appendChild(accItem)
+            <div class="acc-body">${subsecs}</div>`
+          container.appendChild(el)
         })
       })
     }
 
     function renderGrid() {
-      document.getElementById('grid-view').innerHTML = itens.map(itemCardHTML).join('')
+      document.getElementById('grid-view').innerHTML = itens.map(i => itemCardHTML(i)).join('')
     }
 
-    function setItemView(v) {
+    function toggleAccItem(header) {
+      const body = header.nextElementSibling
+      const arrow = header.querySelector('.acc-arrow')
+      const preview = header.querySelector('.acc-preview')
+      const isOpen = body.classList.contains('open')
+      body.classList.toggle('open', !isOpen)
+      arrow.classList.toggle('open', !isOpen)
+      if (preview) preview.style.display = isOpen ? 'flex' : 'none'
+    }
+
+    function setView(v) {
       currentView = v
       localStorage.setItem('wm-item-view', v)
-      document.getElementById('acc-view').style.display = v === 'acc' ? 'flex' : 'none'
-      document.getElementById('grid-view').style.display = v === 'grid' ? 'grid' : 'none'
-      document.getElementById('btn-acc').className = v === 'acc' ? 'btn btn-sm' : 'btn btn-ghost btn-sm'
-      document.getElementById('btn-acc').style.border = v === 'acc' ? '2px solid var(--cherry-dark)' : ''
-      document.getElementById('btn-grid').className = v === 'grid' ? 'btn btn-sm' : 'btn btn-ghost btn-sm'
-      document.getElementById('btn-grid').style.border = v === 'grid' ? '2px solid var(--cherry-dark)' : ''
+      document.getElementById('acc-view').style.display = v === 'acc' ? 'block' : 'none'
+      const gv = document.getElementById('grid-view')
+      if (v === 'grid') { gv.classList.remove('h'); gv.style.display = 'grid' }
+      else { gv.classList.add('h') }
+      document.getElementById('btn-acc').classList.toggle('active', v === 'acc')
+      document.getElementById('btn-grid').classList.toggle('active', v === 'grid')
     }
 
     async function toggleCheck(itemId, el) {
       el.classList.toggle('checked')
       const isChecked = el.classList.contains('checked')
-      try {
-        await Sheets.toggleSeparado(itemId, isChecked)
-      } catch (e) {
-        el.classList.toggle('checked')
-        showToast('Erro ao atualizar', 'error')
-      }
+      try { await Sheets.toggleSeparado(itemId, isChecked) }
+      catch(e) { el.classList.toggle('checked'); showToast('Erro ao atualizar', 'error') }
     }
 
     async function loadRastreamento() {
-      const rastreioEl = document.getElementById('h-rastreio')
       const status = await Sheets.getRastreamento(caixinha.codigo_rastreio)
       if (status) {
-        rastreioEl.innerHTML = `
-          ${caixinha.codigo_rastreio}<br>
-          <small style="font-family:var(--font-body);font-size:11px;color:var(--text-sec)">${status.status}</small>
-        `
+        const el = document.getElementById('h-rastreio')
+        el.innerHTML = `${caixinha.codigo_rastreio}<br><small style="font-size:10px;opacity:.7">${status.status}</small>`
       }
     }
 
     function copyPublicLink() {
-      const url = `${location.origin}/caixinha-publica.html?id=${caixinhaId}`
+      const sheetId = localStorage.getItem('wm-sheet-id')
+      const url = `${location.origin}/caixinha-publica.html?id=${caixinhaId}&sheet=${sheetId}`
       copyToClipboard(url)
     }
 
