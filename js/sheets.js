@@ -45,10 +45,10 @@ const Sheets = {
     )
   },
 
-  // ✅ CORRIGIDO: :append → /append
+  // Busca a próxima linha vazia e escreve lá — garante que nunca sobrescreve
   async appendRow(sheet, values) {
     return this.request(
-      `/values/${encodeURIComponent(sheet)}!A1:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+      `/values/${encodeURIComponent(sheet)}!A:A:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
       'POST',
       { values: [values] }
     )
@@ -78,10 +78,11 @@ const Sheets = {
   },
 
   // ==== CAIXINHAS ====
+  // Lê a partir da linha 2 (pula cabeçalho)
   async getCaixinhas() {
     const rows = await this.getRange('Caixinhas', 'A2:H1000')
     return rows
-      .filter(r => r[0])
+      .filter(r => r[0] && r[0] !== 'id') // ignora se cabeçalho veio junto
       .map(r => ({
         id: r[0], nome: r[1], comunidade: r[2],
         data_pedido: r[3], data_envio: r[4],
@@ -119,7 +120,7 @@ const Sheets = {
   async getItens(caixinhaId) {
     const rows = await this.getRange('Itens', 'A2:K1000')
     return rows
-      .filter(r => r[0] && r[1] === caixinhaId)
+      .filter(r => r[0] && r[0] !== 'id' && r[1] === caixinhaId)
       .map(r => ({
         id: r[0], caixinha_id: r[1], foto_url: r[2],
         tipo_item: r[3], tipo_ceg: r[4], nome_ceg: r[5],
@@ -166,7 +167,7 @@ const Sheets = {
     const config = {
       tipo_item: [], tipo_ceg: [], nome_ceg: [], nome_set: [], comunidade: []
     }
-    rows.filter(r => r[0]).forEach(r => {
+    rows.filter(r => r[0] && r[0] !== 'tipo').forEach(r => {
       if (config[r[0]] !== undefined) config[r[0]].push(r[1])
     })
     return config
@@ -181,10 +182,7 @@ const Sheets = {
     const rowIndex = rows.findIndex(r => r[0] === tipo && r[1] === valor)
     if (rowIndex === -1) return
     const rowNum = rowIndex + 1
-    return this.request(
-      `/values/Config!A${rowNum}:B${rowNum}:clear`,
-      'POST'
-    )
+    return this.request(`/values/Config!A${rowNum}:B${rowNum}:clear`, 'POST')
   },
 
   // ==== RASTREAMENTO CORREIOS ====
@@ -204,18 +202,17 @@ const Sheets = {
         }
       }
       return null
-    } catch {
-      return null
-    }
+    } catch { return null }
   },
 
   // ==== SETUP INICIAL ====
+  // Garante cabeçalhos na linha 1 de cada aba
   async initSpreadsheet() {
     try {
       const meta = await this.request('')
-      const sheets = meta.sheets.map(s => s.properties.title)
+      const existingSheets = meta.sheets.map(s => s.properties.title)
       const needed = ['Caixinhas', 'Itens', 'Config']
-      const toCreate = needed.filter(n => !sheets.includes(n))
+      const toCreate = needed.filter(n => !existingSheets.includes(n))
 
       if (toCreate.length > 0) {
         await this.request(':batchUpdate', 'POST', {
@@ -223,9 +220,20 @@ const Sheets = {
             addSheet: { properties: { title } }
           }))
         })
-        await this.setRange('Caixinhas', 'A1:H1', [['id','nome','comunidade','data_pedido','data_envio','transportadora','codigo_rastreio','status']])
-        await this.setRange('Itens', 'A1:K1', [['id','caixinha_id','foto_url','tipo_item','tipo_ceg','nome_ceg','nome_set','linha_ref','claim','quantidade','separado']])
-        await this.setRange('Config', 'A1:B1', [['tipo','valor']])
+      }
+
+      // Sempre garante cabeçalhos na linha 1
+      await this.setRange('Caixinhas', 'A1:H1', [
+        ['id','nome','comunidade','data_pedido','data_envio','transportadora','codigo_rastreio','status']
+      ])
+      await this.setRange('Itens', 'A1:K1', [
+        ['id','caixinha_id','foto_url','tipo_item','tipo_ceg','nome_ceg','nome_set','linha_ref','claim','quantidade','separado']
+      ])
+      await this.setRange('Config', 'A1:B1', [['tipo','valor']])
+
+      // Adiciona config padrão só se Config estiver vazia
+      const configRows = await this.getRange('Config', 'A2:B10')
+      if (configRows.length === 0) {
         const defaults = [
           ['tipo_item','Photocard'],['tipo_item','Álbum'],['tipo_item','Cacareco'],
           ['tipo_ceg','Caixinha Mercari'],['tipo_ceg','CEG Inter'],
@@ -233,6 +241,7 @@ const Sheets = {
         ]
         for (const row of defaults) await this.appendRow('Config', row)
       }
+
       return true
     } catch (e) {
       console.error('Erro ao inicializar planilha:', e)
