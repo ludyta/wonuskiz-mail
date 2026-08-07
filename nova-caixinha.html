@@ -11,13 +11,12 @@
   <nav class="navbar">
     <a href="dashboard.html" class="navbar-logo">wonuskiz <span class="navbar-badge">mail ✦</span></a>
     <div class="navbar-links">
-      <a href="dashboard.html" class="navbar-link active">dashboard</a>
+      <a href="dashboard.html" class="navbar-link">dashboard</a>
       <a href="configuracoes.html" class="navbar-link">configurações</a>
       <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()"><i class="ti ti-sun"></i><span>light</span></button>
       <div class="navbar-avatar" onclick="Auth.logout()" title="Sair">l</div>
     </div>
   </nav>
-  <div class="ticker"><div class="ticker-inner"><span class="ticker-item">wonuskiz mail</span><span class="ticker-sep">✦</span><span class="ticker-item">kpop cegs</span><span class="ticker-sep">♡</span><span class="ticker-item">envios nacionais</span><span class="ticker-sep">✦</span><span class="ticker-item">wonuskiz mail</span><span class="ticker-sep">✦</span><span class="ticker-item">kpop cegs</span><span class="ticker-sep">♡</span><span class="ticker-item">envios nacionais</span><span class="ticker-sep">✦</span></div></div>
 
   <div class="main">
     <div class="breadcrumb">
@@ -27,7 +26,7 @@
     </div>
 
     <div class="page-header">
-      <div class="page-eyebrow">✦ cadastro</div>
+      <div class="page-eyebrow">✦ envios nacionais</div>
       <h1 class="page-title" id="page-title">Cadastrar caixinha</h1>
       <p class="page-sub" id="page-sub">preencha as informações do novo envio</p>
     </div>
@@ -64,7 +63,7 @@
           <div class="form-field">
             <label class="form-label">Código de rastreio</label>
             <input type="text" id="codigo_rastreio" class="form-input" placeholder="Ex: BR123456789BR">
-            <span class="form-hint" id="rastreio-hint">Será consultado automaticamente nos Correios</span>
+            <span class="form-hint" id="rastreio-hint">Consultado automaticamente nos Correios</span>
           </div>
           <div class="form-field">
             <label class="form-label">Data do pedido</label>
@@ -108,7 +107,6 @@
   <script>
     Theme.init()
     if (!Auth.requireAuth()) throw new Error('Not authenticated')
-
     const params = new URLSearchParams(location.search)
     const editId = params.get('id')
     let config = {}
@@ -121,15 +119,15 @@
         document.getElementById('page-sub').textContent = 'atualize as informações do envio'
         document.getElementById('breadcrumb-current').textContent = 'Editar caixinha'
         document.getElementById('save-label').textContent = 'Salvar alterações'
-        const editData = await Sheets.getCaixinha(editId)
-        if (editData) {
-          document.getElementById('nome').value = editData.nome || ''
-          document.getElementById('comunidade').value = editData.comunidade || ''
-          document.getElementById('transportadora').value = editData.transportadora || 'Correios'
-          document.getElementById('codigo_rastreio').value = editData.codigo_rastreio || ''
-          document.getElementById('data_pedido').value = editData.data_pedido || ''
-          document.getElementById('data_envio').value = editData.data_envio || ''
-          document.getElementById('status').value = editData.status || 'accumulating'
+        const data = await Sheets.getCaixinha(editId)
+        if (data) {
+          document.getElementById('nome').value = data.nome || ''
+          document.getElementById('comunidade').value = data.comunidade || ''
+          document.getElementById('transportadora').value = data.transportadora || 'Correios'
+          document.getElementById('codigo_rastreio').value = data.codigo_rastreio || ''
+          document.getElementById('data_pedido').value = data.data_pedido || ''
+          document.getElementById('data_envio').value = data.data_envio || ''
+          document.getElementById('status').value = data.status || 'accumulating'
           onTransportadoraChange()
         }
       }
@@ -138,7 +136,7 @@
     function onTransportadoraChange() {
       const t = document.getElementById('transportadora').value
       document.getElementById('rastreio-hint').textContent = t === 'Correios'
-        ? 'Será consultado automaticamente nos Correios'
+        ? 'Consultado automaticamente nos Correios'
         : 'Cole o código para consultar no site da transportadora'
     }
 
@@ -161,20 +159,20 @@
         if (editId) {
           await Sheets.updateCaixinha(editId, data)
           showToast('Caixinha atualizada!')
-          setTimeout(() => { location.href = 'dashboard.html' }, 800)
         } else {
           const id = await Sheets.createCaixinha(data)
           showToast('Caixinha criada!')
           setTimeout(() => { location.href = `caixinha.html?id=${id}` }, 800)
+          return
         }
+        setTimeout(() => { location.href = 'dashboard.html' }, 800)
       } catch(e) {
         console.error(e)
         showToast('Erro ao salvar', 'error')
         btn.disabled = false
-        btn.innerHTML = '<i class="ti ti-check"></i> <span id="save-label">Salvar caixinha</span>'
+        btn.innerHTML = '<i class="ti ti-check"></i> Salvar caixinha'
       }
     }
-
     init()
   </script>
 </body>
