@@ -1,9 +1,12 @@
 const Theme = {
   init() {
-    const saved = localStorage.getItem('wm-theme') || 'light'
+    const saved = localStorage.getItem('wm-theme') || 'dark'
     this.apply(saved)
   },
   apply(theme) {
+    document.body.className = document.body.className
+      .replace(/\b(dark|light)\b/g, '').trim()
+    document.body.classList.add(theme)
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('wm-theme', theme)
     const btn = document.getElementById('theme-toggle')
@@ -15,7 +18,7 @@ const Theme = {
     }
   },
   toggle() {
-    const current = localStorage.getItem('wm-theme') || 'light'
+    const current = localStorage.getItem('wm-theme') || 'dark'
     this.apply(current === 'dark' ? 'light' : 'dark')
   }
 }
