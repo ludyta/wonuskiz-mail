@@ -1,11 +1,4 @@
-// Google Sheets API Integration
-// Planilhas necessárias:
-// - Caixinhas: id, nome, comunidade, data_pedido, data_envio, transportadora, codigo_rastreio, status
-// - Itens: id, caixinha_id, foto_url, tipo_item, tipo_ceg, nome_ceg, nome_set, linha_ref, claim, quantidade
-// - Config: tipo (tipo_item|tipo_ceg|nome_ceg|nome_set|comunidade), valor
-
 const Sheets = {
-  // Configurado após login Google OAuth
   accessToken: null,
   spreadsheetId: null,
 
@@ -39,25 +32,28 @@ const Sheets = {
     return res.json()
   },
 
-  // Lê todos os valores de uma aba
   async getRange(sheet, range) {
-    const data = await this.request(`/values/${sheet}!${range}`)
+    const data = await this.request(`/values/${encodeURIComponent(sheet)}!${range}`)
     return data.values || []
   },
 
-  // Escreve valores
   async setRange(sheet, range, values) {
-    return this.request(`/values/${sheet}!${range}?valueInputOption=RAW`, 'PUT', { values })
+    return this.request(
+      `/values/${encodeURIComponent(sheet)}!${range}?valueInputOption=RAW`,
+      'PUT',
+      { values }
+    )
   },
 
-  // Adiciona linha ao final de uma aba
+  // ✅ CORRIGIDO: :append → /append
   async appendRow(sheet, values) {
-    return this.request(`/values/${sheet}!A:Z:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, 'POST', {
-      values: [values]
-    })
+    return this.request(
+      `/values/${encodeURIComponent(sheet)}!A1:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+      'POST',
+      { values: [values] }
+    )
   },
 
-  // Atualiza linha específica (busca por id na col A)
   async updateRow(sheet, id, values) {
     const rows = await this.getRange(sheet, 'A:A')
     const rowIndex = rows.findIndex(r => r[0] === id)
@@ -66,24 +62,24 @@ const Sheets = {
     return this.setRange(sheet, `A${rowNum}`, [values])
   },
 
-  // Deleta linha (limpa conteúdo)
   async deleteRow(sheet, id) {
     const rows = await this.getRange(sheet, 'A:A')
     const rowIndex = rows.findIndex(r => r[0] === id)
     if (rowIndex === -1) return
     const rowNum = rowIndex + 1
-    // Limpar conteúdo da linha
-    return this.request(`/values/${sheet}!A${rowNum}:Z${rowNum}:clear`, 'POST')
+    return this.request(
+      `/values/${encodeURIComponent(sheet)}!A${rowNum}:Z${rowNum}:clear`,
+      'POST'
+    )
   },
 
-  // Gera ID único
   genId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
   },
 
   // ==== CAIXINHAS ====
   async getCaixinhas() {
-    const rows = await this.getRange('Caixinhas', 'A2:I1000')
+    const rows = await this.getRange('Caixinhas', 'A2:H1000')
     return rows
       .filter(r => r[0])
       .map(r => ({
@@ -185,13 +181,18 @@ const Sheets = {
     const rowIndex = rows.findIndex(r => r[0] === tipo && r[1] === valor)
     if (rowIndex === -1) return
     const rowNum = rowIndex + 1
-    return this.request(`/values/Config!A${rowNum}:B${rowNum}:clear`, 'POST')
+    return this.request(
+      `/values/Config!A${rowNum}:B${rowNum}:clear`,
+      'POST'
+    )
   },
 
   // ==== RASTREAMENTO CORREIOS ====
   async getRastreamento(codigo) {
     try {
-      const res = await fetch(`https://api.linketrack.com/track/json?user=teste&token=1abcd00b2731640422849d3892b0a4ea23f5b8c5d3e53c0f9e5a0b1c2d3e4f5&codigo=${codigo}`)
+      const res = await fetch(
+        `https://api.linketrack.com/track/json?user=teste&token=1abcd00b2731640422849d3892b0a4ea23f5b8c5d3e53c0f9e5a0b1c2d3e4f5&codigo=${codigo}`
+      )
       const data = await res.json()
       if (data.eventos && data.eventos.length > 0) {
         const ultimo = data.eventos[0]
@@ -208,25 +209,23 @@ const Sheets = {
     }
   },
 
-  // Setup inicial: cria abas na planilha se não existirem
+  // ==== SETUP INICIAL ====
   async initSpreadsheet() {
     try {
       const meta = await this.request('')
       const sheets = meta.sheets.map(s => s.properties.title)
       const needed = ['Caixinhas', 'Itens', 'Config']
       const toCreate = needed.filter(n => !sheets.includes(n))
-      
+
       if (toCreate.length > 0) {
         await this.request(':batchUpdate', 'POST', {
           requests: toCreate.map(title => ({
             addSheet: { properties: { title } }
           }))
         })
-        // Adicionar cabeçalhos
         await this.setRange('Caixinhas', 'A1:H1', [['id','nome','comunidade','data_pedido','data_envio','transportadora','codigo_rastreio','status']])
         await this.setRange('Itens', 'A1:K1', [['id','caixinha_id','foto_url','tipo_item','tipo_ceg','nome_ceg','nome_set','linha_ref','claim','quantidade','separado']])
         await this.setRange('Config', 'A1:B1', [['tipo','valor']])
-        // Config padrão
         const defaults = [
           ['tipo_item','Photocard'],['tipo_item','Álbum'],['tipo_item','Cacareco'],
           ['tipo_ceg','Caixinha Mercari'],['tipo_ceg','CEG Inter'],
