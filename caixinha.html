@@ -167,28 +167,6 @@
       return groups
     }
 
-    function itemCardHTML(item, showCheck = true) {
-      return `
-        <div class="item-card">
-          <div class="item-img">
-            ${item.foto_url ? `<img src="${item.foto_url}" alt="foto">` : '<i class="ti ti-photo"></i>'}
-          </div>
-          <div class="item-info">
-            <div class="item-type">${item.tipo_item}</div>
-            <div class="item-ref">${item.linha_ref || '—'}</div>
-            <div class="item-claim">${item.claim || item.nome_set}</div>
-          </div>
-          ${showCheck ? `
-          <div class="item-foot">
-            <div class="check-box ${item.separado ? 'checked' : ''}" onclick="toggleCheck('${item.id}', this)"></div>
-            <span class="check-label">sep.</span>
-            <a href="novo-item.html?id=${item.id}&caixinha_id=${caixinhaId}" style="margin-left:auto;color:var(--ts);font-size:13px" title="Editar">
-              <i class="ti ti-edit"></i>
-            </a>
-          </div>` : ''}
-        </div>`
-    }
-
     function renderAcc() {
       const groups = groupItens()
       const container = document.getElementById('acc-view')
@@ -203,7 +181,7 @@
           const subsecs = Object.entries(sets).map(([setName, setItems]) => `
             <div class="subsec">
               <div class="subsec-label">${setName} <span class="subsec-count">${setItems.length}</span></div>
-              <div class="items-grid">${setItems.map(i => itemCardHTML(i)).join('')}</div>
+              <div class="items-grid-exp">${setItems.map(i => itemCardExpHTML(i, true)).join('')}</div>
             </div>`).join('')
           const el = document.createElement('div')
           el.className = 'acc-item'
@@ -226,7 +204,8 @@
     }
 
     function renderGrid() {
-      document.getElementById('grid-view').innerHTML = itens.map(i => itemCardHTML(i)).join('')
+      document.getElementById('grid-view').innerHTML =
+        '<div class="items-grid-exp">' + itens.map(i => itemCardExpHTML(i, true)).join('') + '</div>'
     }
 
     function toggleAccItem(header) {
@@ -250,12 +229,7 @@
       document.getElementById('btn-grid').classList.toggle('active', v === 'grid')
     }
 
-    async function toggleCheck(itemId, el) {
-      el.classList.toggle('checked')
-      const isChecked = el.classList.contains('checked')
-      try { await Sheets.toggleSeparado(itemId, isChecked) }
-      catch(e) { el.classList.toggle('checked'); showToast('Erro ao atualizar', 'error') }
-    }
+
 
     async function loadRastreamento() {
       const status = await Sheets.getRastreamento(caixinha.codigo_rastreio)
