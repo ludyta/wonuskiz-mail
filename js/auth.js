@@ -1,15 +1,10 @@
 const Auth = {
-  get CLIENT_ID() {
-    return window.WM_CONFIG?.googleClientId || localStorage.getItem('wm-client-id') || ''
-  },
+  // Client ID hardcoded — todas as usuárias usam o mesmo app
+  CLIENT_ID: '342854763708-1ht7gkhjjm61s28uhba1cecub35qkak4.apps.googleusercontent.com',
   SCOPES: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file',
   tokenClient: null,
 
   init() {
-    if (!this.CLIENT_ID) {
-      if (!location.pathname.includes('setup')) window.location.href = 'setup.html'
-      return
-    }
     const script = document.createElement('script')
     script.src = 'https://accounts.google.com/gsi/client'
     script.onload = () => this.onGisLoad()
@@ -33,7 +28,6 @@ const Auth = {
   },
 
   login() {
-    if (!this.CLIENT_ID) { window.location.href = 'setup.html'; return }
     if (!this.tokenClient) { showToast('Aguarde e tente novamente', 'error'); return }
     this.tokenClient.requestAccessToken()
   },
@@ -91,7 +85,7 @@ const Auth = {
       localStorage.setItem('wm-sheet-id', sheetId)
       Sheets.spreadsheetId = sheetId
 
-      // 2. Tornar planilha pública (qualquer pessoa com o link pode ver)
+      // 2. Tornar planilha pública
       await fetch(`https://www.googleapis.com/drive/v3/files/${sheetId}/permissions`, {
         method: 'POST',
         headers: {
@@ -104,7 +98,7 @@ const Auth = {
       // 3. Inicializar abas e cabeçalhos
       await Sheets.initSpreadsheet()
 
-      // 4. Criar pasta de imagens no Drive
+      // 4. Criar pasta de imagens
       if (typeof Drive !== 'undefined') await Drive.ensureFolder()
 
       showToast('Tudo pronto!')
@@ -131,7 +125,6 @@ const Auth = {
   },
 
   requireAuth() {
-    if (!this.CLIENT_ID) { window.location.href = 'setup.html'; return false }
     if (!this.isLoggedIn()) { window.location.href = 'index.html'; return false }
     Sheets.accessToken = localStorage.getItem('wm-access-token')
     Sheets.spreadsheetId = localStorage.getItem('wm-sheet-id')
