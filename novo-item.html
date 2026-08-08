@@ -34,24 +34,29 @@
     </div>
 
     <div style="max-width:640px;padding:0 20px 40px">
+
+      <!-- FOTO -->
       <div class="form-section">
         <div class="form-section-title">Foto</div>
         <div id="upload-zone" class="upload-zone" onclick="document.getElementById('file-input').click()">
           <i class="ti ti-cloud-upload upload-icon"></i>
           <span class="upload-txt">Clique para enviar uma foto</span>
-          <span class="upload-sub">PNG, JPG até 10MB</span>
+          <span class="upload-sub">PNG, JPG até 10MB · salvo no seu Google Drive</span>
         </div>
         <div id="upload-preview" class="upload-preview" style="display:none">
           <div class="preview-thumb" id="preview-img"><i class="ti ti-photo"></i></div>
           <div class="preview-info">
             <span class="preview-name" id="preview-name"></span>
             <span class="preview-size" id="preview-size"></span>
-            <button class="preview-remove" onclick="removePhoto()"><i class="ti ti-x"></i> Remover</button>
+            <button class="preview-remove" onclick="removePhoto()">
+              <i class="ti ti-x"></i> Remover
+            </button>
           </div>
         </div>
         <input type="file" id="file-input" accept="image/*" style="display:none" onchange="onFileSelect(this)">
       </div>
 
+      <!-- CLASSIFICAÇÃO -->
       <div class="form-section">
         <div class="form-section-title">Classificação</div>
         <div class="form-grid">
@@ -91,6 +96,7 @@
         </div>
       </div>
 
+      <!-- DETALHES -->
       <div class="form-section">
         <div class="form-section-title">Detalhes</div>
         <div class="form-grid">
@@ -125,17 +131,22 @@
   <script src="js/utils.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/sheets.js"></script>
+  <script src="js/drive.js"></script>
   <script src="js/auth.js"></script>
   <script>
     Theme.init()
     if (!Auth.requireAuth()) throw new Error('Not authenticated')
+
     const params = new URLSearchParams(location.search)
     const caixinhaId = params.get('caixinha_id')
     const editId = params.get('id')
     let fotoBase64 = null
+    let fotoNome = null
+    let fotoUrlExistente = null
 
     async function init() {
       if (!caixinhaId && !editId) { location.href = 'dashboard.html'; return }
+
       const config = await Sheets.getConfig()
       setupCombo(document.getElementById('tipo_item'), document.getElementById('combo-tipo-item'), config.tipo_item || [])
       setupCombo(document.getElementById('tipo_ceg'), document.getElementById('combo-tipo-ceg'), config.tipo_ceg || [])
@@ -166,7 +177,10 @@
           document.getElementById('linha_ref').value = row[7] || ''
           document.getElementById('claim').value = row[8] || ''
           document.getElementById('quantidade').value = row[9] || 1
-          if (row[2]) showPhotoPreview(row[2], 'foto existente', '')
+          if (row[2]) {
+            fotoUrlExistente = row[2]
+            showPhotoPreview(row[2], 'foto existente', '')
+          }
           document.getElementById('cancel-btn').href = `caixinha.html?id=${row[1]}`
         }
       }
@@ -175,10 +189,15 @@
     function onFileSelect(input) {
       const file = input.files[0]
       if (!file) return
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('Imagem muito grande! Máximo 10MB', 'error')
+        return
+      }
+      fotoNome = file.name
       const reader = new FileReader()
       reader.onload = (e) => {
         fotoBase64 = e.target.result
-        showPhotoPreview(fotoBase64, file.name, (file.size/1024).toFixed(0) + ' KB')
+        showPhotoPreview(fotoBase64, file.name, (file.size / 1024).toFixed(0) + ' KB')
       }
       reader.readAsDataURL(file)
     }
@@ -193,6 +212,8 @@
 
     function removePhoto() {
       fotoBase64 = null
+      fotoNome = null
+      fotoUrlExistente = null
       document.getElementById('upload-zone').style.display = 'flex'
       document.getElementById('upload-preview').style.display = 'none'
       document.getElementById('file-input').value = ''
@@ -204,20 +225,33 @@
       const tipo_ceg = document.getElementById('tipo_ceg').value.trim()
       const nome_ceg = document.getElementById('nome_ceg').value.trim()
       const nome_set = document.getElementById('nome_set').value.trim()
+
       if (!tipo_item || !tipo_ceg || !nome_ceg || !nome_set) {
-        showToast('Preencha todos os campos obrigatórios', 'error'); return
+        showToast('Preencha todos os campos obrigatórios', 'error')
+        return
       }
+
       btn.disabled = true
-      btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Salvando...'
+
       try {
+        // Upload da foto para o Drive se tiver nova
+        let fotoUrl = fotoUrlExistente || ''
+        if (fotoBase64) {
+          btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Enviando foto...'
+          fotoUrl = await Drive.uploadImage(fotoBase64, fotoNome || `item_${Date.now()}.jpg`)
+        }
+
+        btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Salvando...'
+
         const data = {
           caixinha_id: caixinhaId,
-          foto_url: fotoBase64 || '',
+          foto_url: fotoUrl,
           tipo_item, tipo_ceg, nome_ceg, nome_set,
           linha_ref: document.getElementById('linha_ref').value.trim(),
           claim: document.getElementById('claim').value.trim(),
           quantidade: parseInt(document.getElementById('quantidade').value) || 1
         }
+
         if (editId) {
           const rows = await Sheets.getRange('Itens', 'A2:B1000')
           const row = rows.find(r => r[0] === editId)
@@ -232,11 +266,12 @@
         }
       } catch(e) {
         console.error(e)
-        showToast('Erro ao salvar item', 'error')
+        showToast('Erro ao salvar: ' + e.message, 'error')
         btn.disabled = false
-        btn.innerHTML = '<i class="ti ti-check"></i> Salvar item'
+        btn.innerHTML = '<i class="ti ti-check"></i> <span id="save-label">Salvar item</span>'
       }
     }
+
     init()
   </script>
 </body>
