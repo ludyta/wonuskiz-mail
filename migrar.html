@@ -24,10 +24,8 @@
         <div class="form-section-title">ID da sua planilha</div>
         <div class="form-field">
           <label class="form-label">Cole o ID da planilha <span class="req">*</span></label>
-          <input type="text" id="sheet-id" class="form-input"
-            placeholder="Ex: 124nlE1OggwshM7oOR..."
-            value="">
-          <span class="form-hint">Encontre em: Drive → wonuskiz-mail — dados → compartilhar → copiar link → o ID está entre /d/ e /edit</span>
+          <input type="text" id="sheet-id" class="form-input" placeholder="Ex: 124nlE1OggwshM7oOR...">
+          <span class="form-hint">Drive → wonuskiz-mail — dados → compartilhar → copiar link → ID entre /d/ e /edit</span>
         </div>
       </div>
 
@@ -35,8 +33,7 @@
         <div class="form-section-title">ID da pasta de imagens (opcional)</div>
         <div class="form-field">
           <label class="form-label">Cole o ID da pasta</label>
-          <input type="text" id="folder-id" class="form-input"
-            placeholder="Ex: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs...">
+          <input type="text" id="folder-id" class="form-input" placeholder="Ex: 1BxiMVs0XRA5nFMd...">
           <span class="form-hint">Drive → wonuskiz-mail — imagens → compartilhar → copiar link → ID entre /folders/ e ?</span>
         </div>
       </div>
@@ -54,53 +51,84 @@
 
   <script src="js/utils.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/sheets.js"></script>
-  <script src="js/drive.js"></script>
-  <script src="js/auth.js"></script>
   <script>
     Theme.init()
-    if (!Auth.isLoggedIn()) { window.location.href = 'index.html' }
-    Sheets.accessToken = localStorage.getItem('wm-access-token')
-    if (typeof Drive !== 'undefined') Drive.init(localStorage.getItem('wm-access-token'))
 
-    // Pré-preencher com o que já tem no localStorage
+    const token = localStorage.getItem('wm-access-token')
+    const expiry = localStorage.getItem('wm-token-expiry')
+    if (!token || !expiry || Date.now() >= parseInt(expiry)) {
+      window.location.href = 'index.html'
+    }
+
+    // Pre-preencher com localStorage se disponível
     const savedSheet = localStorage.getItem('wm-sheet-id')
     const savedFolder = localStorage.getItem('wm-drive-folder')
     if (savedSheet) document.getElementById('sheet-id').value = savedSheet
     if (savedFolder) document.getElementById('folder-id').value = savedFolder
+
+    async function saveConfigToAppData(config) {
+      // Buscar arquivo existente
+      const search = await fetch(
+        "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'wm-config.json'&fields=files(id)",
+        { headers: { 'Authorization': 'Bearer ' + token } }
+      )
+      const data = await search.json()
+      const content = JSON.stringify(config)
+
+      if (data.files && data.files.length > 0) {
+        // Atualizar existente
+        const fileId = data.files[0].id
+        const form = new FormData()
+        form.append('metadata', new Blob(['{}'], { type: 'application/json' }))
+        form.append('file', new Blob([content], { type: 'application/json' }))
+        await fetch(
+          'https://www.googleapis.com/upload/drive/v3/files/' + fileId + '?uploadType=multipart',
+          { method: 'PATCH', headers: { 'Authorization': 'Bearer ' + token }, body: form }
+        )
+      } else {
+        // Criar novo no appDataFolder
+        const meta = JSON.stringify({ name: 'wm-config.json', parents: ['appDataFolder'] })
+        const form = new FormData()
+        form.append('metadata', new Blob([meta], { type: 'application/json' }))
+        form.append('file', new Blob([content], { type: 'application/json' }))
+        await fetch(
+          'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+          { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: form }
+        )
+      }
+    }
 
     async function migrar() {
       const btn = document.getElementById('btn-migrar')
       const sheetId = document.getElementById('sheet-id').value.trim()
       const folderId = document.getElementById('folder-id').value.trim()
 
-      if (!sheetId) { showToast('Cole o ID da planilha', 'error'); return }
+      if (!sheetId) { 
+        alert('Cole o ID da planilha')
+        return 
+      }
 
       btn.disabled = true
       btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Salvando...'
 
       try {
-        // Salvar no localStorage
+        // 1. Salvar no localStorage
         localStorage.setItem('wm-sheet-id', sheetId)
         if (folderId) localStorage.setItem('wm-drive-folder', folderId)
 
-        // Salvar no appDataFolder para funcionar em qualquer dispositivo
-        await Auth.saveConfig({ sheetId, folderId: folderId || null })
+        // 2. Salvar no appDataFolder do Drive
+        await saveConfigToAppData({ sheetId, folderId: folderId || null })
 
-        const result = document.getElementById('result')
-        result.style.display = 'block'
-        result.innerHTML = `
-          <div style="background:rgba(62,220,120,.1);border:1.5px solid rgba(62,220,120,.4);border-radius:12px;padding:14px 16px;color:#3edc78;font-weight:600;display:flex;align-items:center;gap:8px">
-            <i class="ti ti-check"></i> Conta migrada! Agora funciona em qualquer dispositivo.
-          </div>`
+        document.getElementById('result').style.display = 'block'
+        document.getElementById('result').innerHTML =
+          '<div style="background:rgba(62,220,120,.1);border:1.5px solid rgba(62,220,120,.4);border-radius:12px;padding:14px 16px;color:#3edc78;font-weight:600;display:flex;align-items:center;gap:8px"><i class="ti ti-check"></i> Migração concluída! Agora funciona em qualquer dispositivo.</div>'
 
-        showToast('Migração concluída!')
         setTimeout(() => { window.location.href = 'dashboard.html' }, 2000)
       } catch(e) {
         console.error(e)
-        showToast('Erro: ' + e.message, 'error')
+        btn.innerHTML = '<i class="ti ti-alert-circle"></i> Erro: ' + e.message
+        btn.style.background = '#c0392b'
         btn.disabled = false
-        btn.innerHTML = '<i class="ti ti-check"></i> Migrar conta'
       }
     }
   </script>
