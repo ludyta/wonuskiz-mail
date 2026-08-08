@@ -2,7 +2,6 @@ const Auth = {
   get CLIENT_ID() {
     return window.WM_CONFIG?.googleClientId || localStorage.getItem('wm-client-id') || ''
   },
-  // Adicionado drive.file para upload de imagens
   SCOPES: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file',
   tokenClient: null,
 
@@ -23,12 +22,13 @@ const Auth = {
       scope: this.SCOPES,
       callback: (resp) => this.handleToken(resp)
     })
+    // Verifica token existente
     const token = localStorage.getItem('wm-access-token')
     const expiry = localStorage.getItem('wm-token-expiry')
     if (token && expiry && Date.now() < parseInt(expiry)) {
       Sheets.accessToken = token
       Sheets.spreadsheetId = localStorage.getItem('wm-sheet-id')
-      Drive.init(token)
+      if (typeof Drive !== 'undefined') Drive.init(token)
       this.onAuthenticated()
     }
   },
@@ -49,7 +49,7 @@ const Auth = {
     localStorage.setItem('wm-access-token', resp.access_token)
     localStorage.setItem('wm-token-expiry', expiry.toString())
     Sheets.accessToken = resp.access_token
-    Drive.init(resp.access_token)
+    if (typeof Drive !== 'undefined') Drive.init(resp.access_token)
     this.onAuthenticated()
   },
 
@@ -57,7 +57,9 @@ const Auth = {
     const sheetId = localStorage.getItem('wm-sheet-id')
     if (sheetId) {
       Sheets.spreadsheetId = sheetId
-      if (!location.pathname.includes('dashboard')) {
+      // Só redireciona se não estiver já no dashboard
+      const page = location.pathname.split('/').pop() || 'index.html'
+      if (page === 'index.html' || page === '' || page === '/') {
         window.location.href = 'dashboard.html'
       }
     } else {
@@ -84,17 +86,17 @@ const Auth = {
         })
       })
       const sheet = await res.json()
+      if (!sheet.spreadsheetId) throw new Error('Falha ao criar planilha')
       const sheetId = sheet.spreadsheetId
       localStorage.setItem('wm-sheet-id', sheetId)
       Sheets.spreadsheetId = sheetId
       await Sheets.initSpreadsheet()
-      // Cria pasta de imagens no Drive
-      await Drive.ensureFolder()
+      if (typeof Drive !== 'undefined') await Drive.ensureFolder()
       showToast('Tudo pronto!')
       setTimeout(() => { window.location.href = 'dashboard.html' }, 1000)
     } catch(e) {
       console.error(e)
-      showToast('Erro ao configurar conta. Tente novamente.', 'error')
+      showToast('Erro ao configurar conta: ' + e.message, 'error')
     }
   },
 
@@ -102,8 +104,8 @@ const Auth = {
     localStorage.removeItem('wm-access-token')
     localStorage.removeItem('wm-token-expiry')
     localStorage.removeItem('wm-drive-folder')
-    Sheets.accessToken = null
-    Drive.accessToken = null
+    if (typeof Sheets !== 'undefined') Sheets.accessToken = null
+    if (typeof Drive !== 'undefined') Drive.accessToken = null
     window.location.href = 'index.html'
   },
 
@@ -118,7 +120,7 @@ const Auth = {
     if (!this.isLoggedIn()) { window.location.href = 'index.html'; return false }
     Sheets.accessToken = localStorage.getItem('wm-access-token')
     Sheets.spreadsheetId = localStorage.getItem('wm-sheet-id')
-    Drive.init(localStorage.getItem('wm-access-token'))
+    if (typeof Drive !== 'undefined') Drive.init(localStorage.getItem('wm-access-token'))
     return true
   }
 }
