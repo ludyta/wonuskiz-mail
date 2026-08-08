@@ -135,3 +135,133 @@ async function copyToClipboard(text) {
     showToast('Não foi possível copiar', 'error')
   }
 }
+
+// ── LIGHTBOX ──
+function openLightbox(src) {
+  let lb = document.getElementById('wm-lightbox')
+  if (!lb) {
+    lb = document.createElement('div')
+    lb.id = 'wm-lightbox'
+    lb.className = 'wm-lightbox'
+    lb.innerHTML = '<div class="wm-lb-close" onclick="closeLightbox()"><i class="ti ti-x"></i></div><img id="wm-lb-img" src="" alt="foto ampliada">'
+    lb.addEventListener('click', e => { if (e.target === lb) closeLightbox() })
+    document.body.appendChild(lb)
+  }
+  document.getElementById('wm-lb-img').src = src
+  lb.classList.add('open')
+  document.body.style.overflow = 'hidden'
+}
+
+function closeLightbox() {
+  const lb = document.getElementById('wm-lightbox')
+  if (lb) lb.classList.remove('open')
+  document.body.style.overflow = ''
+}
+
+// ── ITEM CARD EXPANDIDO ──
+function itemCardExpHTML(item, isOwner) {
+  isOwner = isOwner !== false
+  const hasImg = item.foto_url && item.foto_url.length > 0
+  const sepDone = item.separado ? 'done' : ''
+  const chkOn = item.separado ? 'on' : ''
+  const sepLbl = item.separado ? 'Separado ✓' : 'Marcar como separado'
+  const sepSub = item.separado ? 'toque para desmarcar' : 'toque para confirmar'
+  const sepColor = item.separado ? 'color:#3edc78' : ''
+  const imgClick = hasImg ? 'openLightbox("' + item.foto_url + '")' : ''
+  const imgCursor = hasImg ? 'cursor:zoom-in' : 'cursor:default'
+
+  let html = '<div class="item-card-exp" id="ice-' + item.id + '">'
+
+  // Imagem
+  html += '<div class="ice-img-wrap">'
+  if (hasImg) {
+    html += '<img src="' + item.foto_url + '" alt="foto" loading="lazy">'
+  } else {
+    html += '<div class="ice-img-placeholder"><i class="ti ti-photo"></i></div>'
+  }
+  html += '<div class="ice-img-overlay" onclick="' + imgClick + '" style="' + imgCursor + '">'
+  html += '<span class="ice-qty-badge">× ' + (item.quantidade || 1) + '</span>'
+  if (hasImg) {
+    html += '<span class="ice-zoom-hint"><i class="ti ti-zoom-in" style="font-size:10px"></i> ampliar</span>'
+  } else {
+    html += '<span></span>'
+  }
+  html += '</div></div>'
+
+  // Cabeçalho
+  html += '<div class="ice-header">'
+  html += '<div class="ice-type">' + (item.tipo_item || '—') + '</div>'
+  html += '<div class="ice-setname">' + (item.claim || item.nome_set || '—') + '</div>'
+  html += '<div class="ice-ref">' + (item.linha_ref || '—') + '</div>'
+  html += '</div>'
+
+  // Toggle detalhes
+  html += '<div class="ice-details-toggle" onclick="toggleIceDetails(this)">'
+  html += '<span class="ice-toggle-lbl"><i class="ti ti-list-details"></i> Exibir detalhes</span>'
+  html += '<i class="ti ti-chevron-down ice-chevron"></i>'
+  html += '</div>'
+
+  // Detalhes
+  html += '<div class="ice-details">'
+  html += '<div class="ice-d-row"><span class="ice-d-label">Tipo</span><span class="ice-d-val">' + (item.tipo_item || '—') + '</span></div>'
+  html += '<div class="ice-d-row"><span class="ice-d-label">CEG</span><span class="ice-d-val">' + (item.tipo_ceg || '—') + '</span></div>'
+  html += '<div class="ice-d-row"><span class="ice-d-label">Nome da CEG</span><span class="ice-d-val">' + (item.nome_ceg || '—') + '</span></div>'
+  html += '<div class="ice-d-row"><span class="ice-d-label">Set</span><span class="ice-d-val">' + (item.nome_set || '—') + '</span></div>'
+  html += '<div class="ice-d-row"><span class="ice-d-label">Linha / Nº</span><span class="ice-d-val">' + (item.linha_ref || '—') + '</span></div>'
+  html += '<div class="ice-d-row"><span class="ice-d-label">Quantidade</span><span class="ice-d-val qty">' + (item.quantidade || 1) + ' itens</span></div>'
+  if (item.claim) {
+    html += '<div class="ice-claim"><div class="ice-claim-lbl">Claim</div><div class="ice-claim-val">' + item.claim + '</div></div>'
+  }
+  html += '</div>'
+
+  // Footer
+  html += '<div class="ice-footer">'
+  html += '<div class="ice-sep-btn ' + sepDone + '" onclick="toggleIceSep(event,this,\'' + item.id + '\')">'
+  html += '<div class="ice-big-chk ' + chkOn + '"></div>'
+  html += '<div><span class="ice-sep-lbl" style="' + sepColor + '">' + sepLbl + '</span>'
+  html += '<span class="ice-sep-sub">' + sepSub + '</span></div>'
+  html += '</div>'
+  if (isOwner) {
+    html += '<a href="novo-item.html?id=' + item.id + '&caixinha_id=' + item.caixinha_id + '" class="ice-edit-btn" title="Editar"><i class="ti ti-edit"></i></a>'
+  }
+  html += '</div></div>'
+
+  return html
+}
+
+function toggleIceDetails(toggle) {
+  const details = toggle.nextElementSibling
+  const chevron = toggle.querySelector('.ice-chevron')
+  const lbl = toggle.querySelector('.ice-toggle-lbl')
+  const isOpen = details.classList.contains('open')
+  details.classList.toggle('open', !isOpen)
+  chevron.classList.toggle('open', !isOpen)
+  lbl.innerHTML = isOpen
+    ? '<i class="ti ti-list-details"></i> Exibir detalhes'
+    : '<i class="ti ti-list-details"></i> Ocultar detalhes'
+}
+
+async function toggleIceSep(e, btn, itemId) {
+  e.stopPropagation()
+  const isDone = btn.classList.contains('done')
+  const newVal = !isDone
+  btn.classList.toggle('done', newVal)
+  const chk = btn.querySelector('.ice-big-chk')
+  chk.classList.toggle('on', newVal)
+  const lbl = btn.querySelector('.ice-sep-lbl')
+  const sub = btn.querySelector('.ice-sep-sub')
+  lbl.textContent = newVal ? 'Separado ✓' : 'Marcar como separado'
+  lbl.style.color = newVal ? '#3edc78' : ''
+  sub.textContent = newVal ? 'toque para desmarcar' : 'toque para confirmar'
+  try {
+    await Sheets.toggleSeparado(itemId, newVal)
+  } catch(err) {
+    btn.classList.toggle('done', isDone)
+    chk.classList.toggle('on', isDone)
+    lbl.textContent = isDone ? 'Separado ✓' : 'Marcar como separado'
+    lbl.style.color = isDone ? '#3edc78' : ''
+    sub.textContent = isDone ? 'toque para desmarcar' : 'toque para confirmar'
+    showToast('Erro ao atualizar', 'error')
+  }
+}
+
