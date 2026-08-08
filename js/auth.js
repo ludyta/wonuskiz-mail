@@ -1,17 +1,14 @@
 const Auth = {
   get CLIENT_ID() {
-    // Prioridade: window.WM_CONFIG (hardcoded) > localStorage (salvo pelo setup)
     return window.WM_CONFIG?.googleClientId || localStorage.getItem('wm-client-id') || ''
   },
-  SCOPES: 'https://www.googleapis.com/auth/spreadsheets',
+  // Adicionado drive.file para upload de imagens
+  SCOPES: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file',
   tokenClient: null,
 
   init() {
     if (!this.CLIENT_ID) {
-      // Sem Client ID: redirecionar para setup
-      if (!location.pathname.includes('setup')) {
-        window.location.href = 'setup.html'
-      }
+      if (!location.pathname.includes('setup')) window.location.href = 'setup.html'
       return
     }
     const script = document.createElement('script')
@@ -31,19 +28,14 @@ const Auth = {
     if (token && expiry && Date.now() < parseInt(expiry)) {
       Sheets.accessToken = token
       Sheets.spreadsheetId = localStorage.getItem('wm-sheet-id')
+      Drive.init(token)
       this.onAuthenticated()
     }
   },
 
   login() {
-    if (!this.CLIENT_ID) {
-      window.location.href = 'setup.html'
-      return
-    }
-    if (!this.tokenClient) {
-      showToast('Aguarde um instante e tente novamente', 'error')
-      return
-    }
+    if (!this.CLIENT_ID) { window.location.href = 'setup.html'; return }
+    if (!this.tokenClient) { showToast('Aguarde e tente novamente', 'error'); return }
     this.tokenClient.requestAccessToken()
   },
 
@@ -57,6 +49,7 @@ const Auth = {
     localStorage.setItem('wm-access-token', resp.access_token)
     localStorage.setItem('wm-token-expiry', expiry.toString())
     Sheets.accessToken = resp.access_token
+    Drive.init(resp.access_token)
     this.onAuthenticated()
   },
 
@@ -73,7 +66,7 @@ const Auth = {
   },
 
   async setupSpreadsheet() {
-    showToast('Criando sua planilha no Google Drive...')
+    showToast('Configurando sua conta...')
     try {
       const res = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
         method: 'POST',
@@ -95,18 +88,22 @@ const Auth = {
       localStorage.setItem('wm-sheet-id', sheetId)
       Sheets.spreadsheetId = sheetId
       await Sheets.initSpreadsheet()
-      showToast('Planilha criada!')
+      // Cria pasta de imagens no Drive
+      await Drive.ensureFolder()
+      showToast('Tudo pronto!')
       setTimeout(() => { window.location.href = 'dashboard.html' }, 1000)
-    } catch (e) {
+    } catch(e) {
       console.error(e)
-      showToast('Erro ao criar planilha. Tente novamente.', 'error')
+      showToast('Erro ao configurar conta. Tente novamente.', 'error')
     }
   },
 
   logout() {
     localStorage.removeItem('wm-access-token')
     localStorage.removeItem('wm-token-expiry')
+    localStorage.removeItem('wm-drive-folder')
     Sheets.accessToken = null
+    Drive.accessToken = null
     window.location.href = 'index.html'
   },
 
@@ -117,16 +114,11 @@ const Auth = {
   },
 
   requireAuth() {
-    if (!this.CLIENT_ID) {
-      window.location.href = 'setup.html'
-      return false
-    }
-    if (!this.isLoggedIn()) {
-      window.location.href = 'index.html'
-      return false
-    }
+    if (!this.CLIENT_ID) { window.location.href = 'setup.html'; return false }
+    if (!this.isLoggedIn()) { window.location.href = 'index.html'; return false }
     Sheets.accessToken = localStorage.getItem('wm-access-token')
     Sheets.spreadsheetId = localStorage.getItem('wm-sheet-id')
+    Drive.init(localStorage.getItem('wm-access-token'))
     return true
   }
 }
