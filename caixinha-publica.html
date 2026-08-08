@@ -107,21 +107,6 @@
       document.getElementById('error').style.display = 'block'
     }
 
-    function itemCardHTML(item) {
-      return `<div class="item-card">
-        <div class="item-img">${item.foto_url ? `<img src="${item.foto_url}" alt="foto">` : '<i class="ti ti-photo"></i>'}</div>
-        <div class="item-info">
-          <div class="item-type">${item.tipo_item}</div>
-          <div class="item-ref">${item.linha_ref || '—'}</div>
-          <div class="item-claim">${item.claim || item.nome_set}</div>
-        </div>
-        <div class="item-foot">
-          <div class="check-box ${item.separado ? 'checked' : ''}" style="cursor:default;pointer-events:none"></div>
-          <span class="check-label">sep.</span>
-        </div>
-      </div>`
-    }
-
     function renderAcc(itens) {
       const groups = {}
       itens.forEach(item => {
@@ -145,7 +130,7 @@
           const subsecs = Object.entries(sets).map(([setName, setItems]) => `
             <div class="subsec">
               <div class="subsec-label">${setName} <span class="subsec-count">${setItems.length}</span></div>
-              <div class="items-grid">${setItems.map(itemCardHTML).join('')}</div>
+              <div class="items-grid-exp">${setItems.map(i => itemCardExpHTML(i, false)).join('')}</div>
             </div>`).join('')
           const el = document.createElement('div')
           el.className = 'acc-item'
@@ -168,7 +153,8 @@
     }
 
     function renderGrid(itens) {
-      document.getElementById('grid-view').innerHTML = itens.map(itemCardHTML).join('')
+      document.getElementById('grid-view').innerHTML =
+        '<div class="items-grid-exp">' + itens.map(i => itemCardExpHTML(i, false)).join('') + '</div>'
     }
 
     function toggleAccItem(header) {
