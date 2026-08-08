@@ -266,8 +266,12 @@
     }
 
     function copyPublicLink() {
-      const sheetId = localStorage.getItem('wm-sheet-id')
-      const url = `${location.origin}/caixinha-publica.html?id=${caixinhaId}&sheet=${sheetId}`
+      const sheetId = localStorage.getItem('wm-sheet-id') || Sheets.spreadsheetId
+      if (!sheetId) {
+        showToast('ID da planilha não encontrado. Faça logout e login novamente.', 'error')
+        return
+      }
+      const url = location.origin + '/caixinha-publica.html?id=' + caixinhaId + '&sheet=' + sheetId
       copyToClipboard(url)
     }
 
