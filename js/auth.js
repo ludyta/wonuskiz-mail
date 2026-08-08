@@ -22,7 +22,6 @@ const Auth = {
       scope: this.SCOPES,
       callback: (resp) => this.handleToken(resp)
     })
-    // Verifica token existente
     const token = localStorage.getItem('wm-access-token')
     const expiry = localStorage.getItem('wm-token-expiry')
     if (token && expiry && Date.now() < parseInt(expiry)) {
@@ -57,7 +56,6 @@ const Auth = {
     const sheetId = localStorage.getItem('wm-sheet-id')
     if (sheetId) {
       Sheets.spreadsheetId = sheetId
-      // Só redireciona se não estiver já no dashboard
       const page = location.pathname.split('/').pop() || 'index.html'
       if (page === 'index.html' || page === '' || page === '/') {
         window.location.href = 'dashboard.html'
@@ -70,6 +68,7 @@ const Auth = {
   async setupSpreadsheet() {
     showToast('Configurando sua conta...')
     try {
+      // 1. Criar planilha
       const res = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
         method: 'POST',
         headers: {
@@ -87,11 +86,27 @@ const Auth = {
       })
       const sheet = await res.json()
       if (!sheet.spreadsheetId) throw new Error('Falha ao criar planilha')
+
       const sheetId = sheet.spreadsheetId
       localStorage.setItem('wm-sheet-id', sheetId)
       Sheets.spreadsheetId = sheetId
+
+      // 2. Tornar planilha pública (qualquer pessoa com o link pode ver)
+      await fetch(`https://www.googleapis.com/drive/v3/files/${sheetId}/permissions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Sheets.accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ role: 'reader', type: 'anyone' })
+      })
+
+      // 3. Inicializar abas e cabeçalhos
       await Sheets.initSpreadsheet()
+
+      // 4. Criar pasta de imagens no Drive
       if (typeof Drive !== 'undefined') await Drive.ensureFolder()
+
       showToast('Tudo pronto!')
       setTimeout(() => { window.location.href = 'dashboard.html' }, 1000)
     } catch(e) {
