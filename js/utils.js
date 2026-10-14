@@ -158,6 +158,15 @@ function closeLightbox() {
   document.body.style.overflow = ''
 }
 
+// Delegated click para ampliar — captura cliques em overlay e no span "ampliar"
+document.addEventListener('click', function(e) {
+  const overlay = e.target.closest('.ice-img-overlay[data-lightbox]')
+  if (overlay) {
+    e.stopPropagation()
+    openLightbox(overlay.dataset.lightbox)
+  }
+})
+
 // ── SEPARADO — localStorage helpers ──
 function getSepState(itemId) {
   try {
@@ -185,8 +194,8 @@ function itemCardExpHTML(item, isOwner) {
   const sepLbl = separado ? 'Separado ✓' : 'Marcar como separado'
   const sepSub = separado ? 'toque para desmarcar' : 'toque para confirmar'
   const sepColor = separado ? 'color:#3edc78' : ''
-  const imgClick = hasImg ? 'openLightbox("' + item.foto_url + '")' : ''
   const imgCursor = hasImg ? 'cursor:zoom-in' : 'cursor:default'
+  const imgData = hasImg ? ' data-lightbox="' + item.foto_url.replace(/"/g, '&quot;') + '"' : ''
 
   let html = '<div class="item-card-exp" id="ice-' + item.id + '">'
 
@@ -197,7 +206,7 @@ function itemCardExpHTML(item, isOwner) {
   } else {
     html += '<div class="ice-img-placeholder"><i class="ti ti-photo"></i></div>'
   }
-  html += '<div class="ice-img-overlay" onclick="' + imgClick + '" style="' + imgCursor + '">'
+  html += '<div class="ice-img-overlay"' + imgData + ' style="' + imgCursor + '">'
   html += '<span class="ice-qty-badge">× ' + (item.quantidade || 1) + '</span>'
   if (hasImg) {
     html += '<span class="ice-zoom-hint"><i class="ti ti-zoom-in" style="font-size:10px"></i> ampliar</span>'
