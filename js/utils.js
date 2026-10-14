@@ -222,7 +222,10 @@ function itemCardExpHTML(item, isOwner) {
   html += '<span class="ice-sep-sub">' + sepSub + '</span></div>'
   html += '</div>'
   if (isOwner) {
+    html += '<div class="ice-action-btns">'
     html += '<a href="novo-item.html?id=' + item.id + '&caixinha_id=' + item.caixinha_id + '" class="ice-edit-btn" title="Editar"><i class="ti ti-edit"></i></a>'
+    html += '<button class="ice-del-btn" onclick="confirmDeleteItem(event,\'' + item.id + '\')" title="Excluir"><i class="ti ti-trash"></i></button>'
+    html += '</div>'
   }
   html += '</div></div>'
 
@@ -264,4 +267,3 @@ async function toggleIceSep(e, btn, itemId) {
     showToast('Erro ao atualizar', 'error')
   }
 }
-
