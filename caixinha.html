@@ -231,39 +231,6 @@
 
 
 
-    async function confirmDeleteItem(e, itemId) {
-      e.stopPropagation()
-      e.preventDefault()
-      const card = document.getElementById('ice-' + itemId)
-      if (!card) return
-      // Mostrar confirmação no próprio card
-      const existing = card.querySelector('.ice-del-confirm')
-      if (existing) { existing.remove(); return }
-      const confirm = document.createElement('div')
-      confirm.className = 'ice-del-confirm'
-      confirm.innerHTML = `
-        <span>Excluir este item?</span>
-        <button class="btn btn-sm" style="background:var(--err,#e53935);color:#fff;border:none;padding:4px 12px;border-radius:6px" onclick="deleteItemAction('${itemId}')">Excluir</button>
-        <button class="btn btn-sm btn-ghost" onclick="this.closest('.ice-del-confirm').remove()">Cancelar</button>`
-      card.appendChild(confirm)
-    }
-
-    async function deleteItemAction(itemId) {
-      try {
-        await Sheets.deleteItem(itemId)
-        itens = itens.filter(i => i.id !== itemId)
-        renderAcc()
-        renderGrid()
-        showToast('Item excluído!')
-        if (itens.length === 0) {
-          document.getElementById('items-section').style.display = 'none'
-          document.getElementById('empty-items').style.display = 'block'
-        }
-      } catch(e) {
-        showToast('Erro ao excluir', 'error')
-      }
-    }
-
     async function loadRastreamento() {
       const status = await Sheets.getRastreamento(caixinha.codigo_rastreio)
       if (status) {
