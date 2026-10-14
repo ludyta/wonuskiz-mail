@@ -158,15 +158,33 @@ function closeLightbox() {
   document.body.style.overflow = ''
 }
 
+// ── SEPARADO — localStorage helpers ──
+function getSepState(itemId) {
+  try {
+    const data = JSON.parse(localStorage.getItem('wm-sep') || '{}')
+    return !!data[itemId]
+  } catch { return false }
+}
+
+function setSepState(itemId, val) {
+  try {
+    const data = JSON.parse(localStorage.getItem('wm-sep') || '{}')
+    if (val) data[itemId] = true
+    else delete data[itemId]
+    localStorage.setItem('wm-sep', JSON.stringify(data))
+  } catch {}
+}
+
 // ── ITEM CARD EXPANDIDO ──
 function itemCardExpHTML(item, isOwner) {
   isOwner = isOwner !== false
   const hasImg = item.foto_url && item.foto_url.length > 0
-  const sepDone = item.separado ? 'done' : ''
-  const chkOn = item.separado ? 'on' : ''
-  const sepLbl = item.separado ? 'Separado ✓' : 'Marcar como separado'
-  const sepSub = item.separado ? 'toque para desmarcar' : 'toque para confirmar'
-  const sepColor = item.separado ? 'color:#3edc78' : ''
+  const separado = getSepState(item.id)
+  const sepDone = separado ? 'done' : ''
+  const chkOn = separado ? 'on' : ''
+  const sepLbl = separado ? 'Separado ✓' : 'Marcar como separado'
+  const sepSub = separado ? 'toque para desmarcar' : 'toque para confirmar'
+  const sepColor = separado ? 'color:#3edc78' : ''
   const imgClick = hasImg ? 'openLightbox("' + item.foto_url + '")' : ''
   const imgCursor = hasImg ? 'cursor:zoom-in' : 'cursor:default'
 
@@ -222,10 +240,7 @@ function itemCardExpHTML(item, isOwner) {
   html += '<span class="ice-sep-sub">' + sepSub + '</span></div>'
   html += '</div>'
   if (isOwner) {
-    html += '<div class="ice-action-btns">'
     html += '<a href="novo-item.html?id=' + item.id + '&caixinha_id=' + item.caixinha_id + '" class="ice-edit-btn" title="Editar"><i class="ti ti-edit"></i></a>'
-    html += '<button class="ice-del-btn" onclick="confirmDeleteItem(event,\'' + item.id + '\')" title="Excluir"><i class="ti ti-trash"></i></button>'
-    html += '</div>'
   }
   html += '</div></div>'
 
@@ -244,7 +259,7 @@ function toggleIceDetails(toggle) {
     : '<i class="ti ti-list-details"></i> Ocultar detalhes'
 }
 
-async function toggleIceSep(e, btn, itemId) {
+function toggleIceSep(e, btn, itemId) {
   e.stopPropagation()
   const isDone = btn.classList.contains('done')
   const newVal = !isDone
@@ -256,14 +271,5 @@ async function toggleIceSep(e, btn, itemId) {
   lbl.textContent = newVal ? 'Separado ✓' : 'Marcar como separado'
   lbl.style.color = newVal ? '#3edc78' : ''
   sub.textContent = newVal ? 'toque para desmarcar' : 'toque para confirmar'
-  try {
-    await Sheets.toggleSeparado(itemId, newVal)
-  } catch(err) {
-    btn.classList.toggle('done', isDone)
-    chk.classList.toggle('on', isDone)
-    lbl.textContent = isDone ? 'Separado ✓' : 'Marcar como separado'
-    lbl.style.color = isDone ? '#3edc78' : ''
-    sub.textContent = isDone ? 'toque para desmarcar' : 'toque para confirmar'
-    showToast('Erro ao atualizar', 'error')
-  }
+  setSepState(itemId, newVal)
 }
