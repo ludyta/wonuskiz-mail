@@ -174,15 +174,19 @@
       Object.entries(groups).forEach(([tipoCeg, nomes]) => {
         Object.entries(nomes).forEach(([nomeCeg, sets]) => {
           const allItems = Object.values(sets).flat()
+          const totalQtd = allItems.reduce((s, i) => s + (i.quantidade || 1), 0)
           const thumbs = allItems.slice(0,4).map(i =>
             `<div class="acc-thumb">${i.foto_url ? `<img src="${i.foto_url}">` : '<i class="ti ti-photo"></i>'}</div>`
           ).join('')
           const more = allItems.length > 4 ? `<span class="acc-more">+${allItems.length-4}</span>` : ''
-          const subsecs = Object.entries(sets).map(([setName, setItems]) => `
+          const subsecs = Object.entries(sets).map(([setName, setItems]) => {
+            const setQtd = setItems.reduce((s, i) => s + (i.quantidade || 1), 0)
+            return `
             <div class="subsec">
-              <div class="subsec-label">${setName} <span class="subsec-count">${setItems.length}</span></div>
+              <div class="subsec-label">${setName} <span class="subsec-count">${setQtd}</span></div>
               <div class="items-grid-exp">${setItems.map(i => itemCardExpHTML(i, true)).join('')}</div>
-            </div>`).join('')
+            </div>`
+          }).join('')
           const el = document.createElement('div')
           el.className = 'acc-item'
           el.innerHTML = `
@@ -193,7 +197,7 @@
                 <div class="acc-preview">${thumbs}${more}</div>
               </div>
               <div class="acc-header-right">
-                <span class="acc-count">${allItems.length} itens</span>
+                <span class="acc-count">${totalQtd} itens</span>
                 <i class="ti ti-chevron-down acc-arrow"></i>
               </div>
             </div>
