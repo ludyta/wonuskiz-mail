@@ -120,6 +120,15 @@
       </div>
 
       <div class="form-actions">
+        <button class="btn btn-danger" id="delete-btn" style="display:none" onclick="confirmDelete()">
+          <i class="ti ti-trash"></i> Excluir item
+        </button>
+        <div id="delete-confirm" style="display:none;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:13px;color:var(--tx)">Excluir este item?</span>
+          <button class="btn btn-sm" style="background:#C0392B;color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:13px;cursor:pointer" onclick="deleteItem()">Excluir</button>
+          <button class="btn btn-ghost btn-sm" style="padding:6px 14px;font-size:13px" onclick="cancelDelete()">Cancelar</button>
+        </div>
+        <span style="flex:1"></span>
         <a href="#" id="cancel-btn" class="btn btn-ghost">Cancelar</a>
         <button class="btn btn-primary" id="save-btn" onclick="save()">
           <i class="ti ti-check"></i> <span id="save-label">Salvar item</span>
@@ -167,6 +176,7 @@
         document.getElementById('page-title').textContent = 'Editar item'
         document.getElementById('bc-current').textContent = 'Editar item'
         document.getElementById('save-label').textContent = 'Salvar alterações'
+        document.getElementById('delete-btn').style.display = 'inline-flex'
         const rows = await Sheets.getRange('Itens', 'A2:K1000')
         const row = rows.find(r => r[0] === editId)
         if (row) {
@@ -269,6 +279,31 @@
         showToast('Erro ao salvar: ' + e.message, 'error')
         btn.disabled = false
         btn.innerHTML = '<i class="ti ti-check"></i> <span id="save-label">Salvar item</span>'
+      }
+    }
+
+    function confirmDelete() {
+      document.getElementById('delete-btn').style.display = 'none'
+      const conf = document.getElementById('delete-confirm')
+      conf.style.display = 'flex'
+    }
+
+    function cancelDelete() {
+      document.getElementById('delete-confirm').style.display = 'none'
+      document.getElementById('delete-btn').style.display = 'inline-flex'
+    }
+
+    async function deleteItem() {
+      try {
+        await Sheets.deleteItem(editId)
+        showToast('Item excluído!')
+        const rows = await Sheets.getRange('Itens', 'A2:B1000').catch(() => [])
+        const row = rows.find(r => r[0] === editId)
+        const destId = (row && row[1]) || caixinhaId
+        setTimeout(() => { location.href = `caixinha.html?id=${destId}` }, 800)
+      } catch(e) {
+        showToast('Erro ao excluir', 'error')
+        cancelDelete()
       }
     }
 
