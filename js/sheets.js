@@ -125,7 +125,7 @@ const Sheets = {
 
   // ==== ITENS ====
   async getItens(caixinhaId) {
-    const rows = await this.getRange('Itens', 'A2:K1000')
+    const rows = await this.getRange('Itens', 'A2:L1000')
     return rows
       .filter(r => r[0] && r[0] !== 'id' && r[1] === caixinhaId)
       .map(r => ({
