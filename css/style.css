@@ -903,8 +903,25 @@ body {
 
 /* FORM ACTIONS */
 .form-actions { display: flex; align-items: center; gap: 10px; padding-top: 8px; flex-wrap: wrap; }
+.form-actions-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .btn-danger{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;background:rgba(192,57,43,.1);border:1.5px solid rgba(192,57,43,.3);color:#C0392B;transition:background .15s}
 .btn-danger:hover{background:rgba(192,57,43,.18)}
+
+/* ── CLAIMS WRAP (formulário) ── */
+.claims-wrap{background:var(--sf2);border:1.5px solid var(--bo);border-radius:12px;overflow:hidden;margin-bottom:4px}
+.claims-head{padding:12px 14px 10px;border-bottom:1px dashed var(--bo)}
+.claims-head-lbl{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--cr);display:block;margin-bottom:3px}
+.claims-hint{font-size:11px;color:var(--ts);line-height:1.5}
+.claim-item-wrap{border-bottom:1px dashed var(--bo);padding:12px 14px}
+.claim-item-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.claim-item-num{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:var(--pu);background:rgba(138,127,192,.14);border-radius:6px;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.claim-remove-btn{width:26px;height:26px;border-radius:7px;border:1.5px solid var(--bo);background:transparent;color:var(--ts);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.claim-remove-btn:hover{border-color:#c0392b;color:#c0392b}
+.claim-item-fields{display:flex;flex-direction:column;gap:8px}
+.claim-field-group{display:flex;flex-direction:column;gap:4px}
+.claim-field-lbl{font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--ts);opacity:.8}
+.add-claim-btn{width:100%;padding:12px;border:none;background:transparent;color:var(--pu);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s}
+.add-claim-btn:hover{background:rgba(138,127,192,.08)}
 
 /* BREADCRUMB */
 .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ts); margin-bottom: 16px; padding: 14px 20px 0; }
@@ -1055,8 +1072,11 @@ body {
 .ice-claims{padding:8px 14px 12px}
 .ice-claims-hd{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--cr);margin-bottom:3px}
 .ice-claims-hint{font-size:10px;color:var(--ts);line-height:1.4;margin-bottom:8px;opacity:.75}
-.ice-claim-row{background:var(--sf2);border-radius:8px;border-left:3px solid var(--pu);padding:9px 11px;margin-bottom:6px;font-size:12px;color:var(--tx);line-height:1.5;font-weight:500}
+.ice-claim-row{background:var(--sf2);border-radius:9px;border-left:3px solid var(--pu);padding:10px 12px;margin-bottom:6px}
 .ice-claim-row:last-child{margin-bottom:0}
+.ice-claim-set{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:var(--pu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.ice-claim-member{font-size:14px;font-weight:800;color:var(--tx);line-height:1.2;margin-bottom:2px}
+.ice-claim-linha{font-size:11px;color:var(--ts);line-height:1.4}
 
 /* 4. footer separado */
 .ice-footer{display:flex;align-items:center;gap:8px;padding:9px 10px;border-top:1px dashed var(--bo);transition:background .2s,border-top-color .2s}
