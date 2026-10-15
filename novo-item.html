@@ -198,7 +198,7 @@
         document.getElementById('bc-current').textContent = 'Editar item'
         document.getElementById('save-label').textContent = 'Salvar alterações'
         document.getElementById('delete-btn').style.display = 'inline-flex'
-        const rows = await Sheets.getRange('Itens', 'A2:K1000')
+        const rows = await Sheets.getRange('Itens', 'A2:L1000')
         const row = rows.find(r => r[0] === editId)
         if (row) {
           document.getElementById('tipo_item').value = row[3] || ''
@@ -286,9 +286,10 @@
         }
 
         if (editId) {
-          const rows = await Sheets.getRange('Itens', 'A2:B1000')
+          const rows = await Sheets.getRange('Itens', 'A2:L1000')
           const row = rows.find(r => r[0] === editId)
           data.caixinha_id = row ? row[1] : caixinhaId
+          data.separado = row ? row[10] === 'TRUE' : false
           await Sheets.updateItem(editId, data)
           showToast('Item atualizado!')
           setTimeout(() => { location.href = `caixinha.html?id=${data.caixinha_id}` }, 800)
