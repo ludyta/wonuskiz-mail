@@ -125,7 +125,7 @@ const Sheets = {
 
   // ==== ITENS ====
   async getItens(caixinhaId) {
-    const rows = await this.getRange('Itens', 'A2:L1000')
+    const rows = await this.getRange('Itens', 'A2:M1000')
     return rows
       .filter(r => r[0] && r[0] !== 'id' && r[1] === caixinhaId)
       .map(r => ({
@@ -140,7 +140,8 @@ const Sheets = {
         claim: r[8] || '',
         quantidade: parseInt(r[9]) || 1,
         separado: r[10] === 'TRUE',
-        membro: r[11] || ''
+        membro: r[11] || '',
+        claims: r[12] || ''
       }))
   },
 
@@ -158,7 +159,8 @@ const Sheets = {
       data.claim || '',
       data.quantidade || 1,
       'FALSE',
-      data.membro || ''
+      data.membro || '',
+      data.claims || ''
     ])
     return id
   },
@@ -176,7 +178,8 @@ const Sheets = {
       data.claim || '',
       data.quantidade || 1,
       data.separado ? 'TRUE' : 'FALSE',
-      data.membro || ''
+      data.membro || '',
+      data.claims || ''
     ])
   },
 
@@ -275,9 +278,9 @@ const Sheets = {
         'id','nome','comunidade','data_pedido','data_envio',
         'transportadora','codigo_rastreio','status'
       ]])
-      await this.setRange('Itens', 'A1:L1', [[
+      await this.setRange('Itens', 'A1:M1', [[
         'id','caixinha_id','foto_url','tipo_item','tipo_ceg',
-        'nome_ceg','nome_set','linha_ref','claim','quantidade','separado','membro'
+        'nome_ceg','nome_set','linha_ref','claim','quantidade','separado','membro','claims'
       ]])
       await this.setRange('Config', 'A1:B1', [['tipo','valor']])
 
