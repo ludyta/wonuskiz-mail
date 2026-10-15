@@ -139,7 +139,8 @@ const Sheets = {
         linha_ref: r[7] || '',
         claim: r[8] || '',
         quantidade: parseInt(r[9]) || 1,
-        separado: r[10] === 'TRUE'
+        separado: r[10] === 'TRUE',
+        membro: r[11] || ''
       }))
   },
 
@@ -156,7 +157,8 @@ const Sheets = {
       data.linha_ref || '',
       data.claim || '',
       data.quantidade || 1,
-      'FALSE'
+      'FALSE',
+      data.membro || ''
     ])
     return id
   },
@@ -173,7 +175,8 @@ const Sheets = {
       data.linha_ref || '',
       data.claim || '',
       data.quantidade || 1,
-      data.separado ? 'TRUE' : 'FALSE'
+      data.separado ? 'TRUE' : 'FALSE',
+      data.membro || ''
     ])
   },
 
@@ -272,9 +275,9 @@ const Sheets = {
         'id','nome','comunidade','data_pedido','data_envio',
         'transportadora','codigo_rastreio','status'
       ]])
-      await this.setRange('Itens', 'A1:K1', [[
+      await this.setRange('Itens', 'A1:L1', [[
         'id','caixinha_id','foto_url','tipo_item','tipo_ceg',
-        'nome_ceg','nome_set','linha_ref','claim','quantidade','separado'
+        'nome_ceg','nome_set','linha_ref','claim','quantidade','separado','membro'
       ]])
       await this.setRange('Config', 'A1:B1', [['tipo','valor']])
 
