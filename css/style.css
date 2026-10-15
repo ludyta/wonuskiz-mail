@@ -105,6 +105,10 @@ body {
   text-decoration-color: var(--sa);
 }
 
+.navbar-avatar-wrap {
+  position: relative;
+}
+
 .navbar-avatar {
   width: 28px;
   height: 28px;
@@ -117,6 +121,57 @@ body {
   font-weight: 700;
   color: #F7F8EF;
   cursor: pointer;
+  overflow: hidden;
+  transition: opacity .15s;
+}
+.navbar-avatar:hover { opacity: .85; }
+.navbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Dropdown menu do avatar */
+.avatar-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 170px;
+  background: var(--bg2, #1a1535);
+  border: 1px solid var(--bo);
+  border-radius: 10px;
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  z-index: 200;
+}
+.avatar-menu.open { display: flex; }
+
+.avatar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tx);
+  cursor: pointer;
+  text-decoration: none;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  transition: background .12s;
+  font-family: 'Bricolage Grotesque', sans-serif;
+}
+.avatar-menu-item:hover { background: var(--bo); }
+.avatar-menu-item.active { color: var(--pu, #8a7fc0); }
+.avatar-menu-item.danger { color: var(--sa); }
+.avatar-menu-item.danger:hover { background: rgba(205,132,114,.12); }
+
+.avatar-menu-sep {
+  height: 1px;
+  background: var(--bo);
+  margin: 3px 0;
 }
 
 .theme-toggle {
