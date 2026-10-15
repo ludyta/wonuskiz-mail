@@ -305,8 +305,14 @@
   <script src="js/drive.js"></script>
   <script src="js/auth.js"></script>
   <script>
+    // DEBUG — remove depois
+    document.getElementById('loading').innerHTML = '<i class="ti ti-loader ti-spin"></i> Iniciando...'
+
     Theme.init()
-    if (!Auth.requireAuth()) throw new Error('Not authenticated')
+    document.getElementById('loading').innerHTML = '<i class="ti ti-loader ti-spin"></i> Verificando auth...'
+    const authOk = Auth.requireAuth()
+    document.getElementById('loading').innerHTML = '<i class="ti ti-loader ti-spin"></i> Auth: ' + authOk + ' | sheet: ' + Sheets.spreadsheetId + ' | token: ' + (Drive.accessToken ? 'ok' : 'null')
+    if (!authOk) { window.location.href = 'index.html'; throw new Error('Not authenticated') }
 
     let fotoUrl = ''
 
@@ -321,13 +327,17 @@
     }
 
     async function load() {
+      // Carrega dados públicos (nome e @) do Sheets — falha silenciosa
+      let pub = { nome: '', handle: '' }
       try {
-        // Carrega dados públicos (nome e @) do Sheets
-        const pub = await Sheets.getPerfilPublico()
-        if (pub.nome) document.getElementById('f-nome').value = pub.nome
-        if (pub.handle) document.getElementById('f-handle').value = pub.handle
+        pub = await Sheets.getPerfilPublico()
+      } catch(e) { console.warn('getPerfilPublico error:', e) }
 
-        // Carrega dados privados (endereço + foto) do Drive appDataFolder
+      if (pub.nome) document.getElementById('f-nome').value = pub.nome
+      if (pub.handle) document.getElementById('f-handle').value = pub.handle
+
+      // Carrega dados privados (endereço + foto) do Drive — falha silenciosa
+      try {
         const priv = await Drive.loadPerfilPrivado()
         if (priv) {
           if (priv.foto_url) setFoto(priv.foto_url)
@@ -339,24 +349,21 @@
           if (priv.bairro) document.getElementById('f-bairro').value = priv.bairro
           if (priv.cidade) document.getElementById('f-cidade').value = priv.cidade
         }
+      } catch(e) { console.warn('loadPerfilPrivado error:', e) }
 
-        // Inicial do avatar na navbar
-        const inicial = (pub.nome || 'l')[0].toLowerCase()
-        document.getElementById('user-avatar').textContent = inicial
-        document.getElementById('foto-inicial').textContent = inicial
+      // Inicial do avatar na navbar
+      const inicial = (pub.nome || 'l')[0].toLowerCase()
+      document.getElementById('user-avatar').textContent = inicial
+      document.getElementById('foto-inicial').textContent = inicial
 
-        buildAddr()
-        document.getElementById('loading').style.display = 'none'
-        document.getElementById('perfil-content').style.display = 'block'
+      buildAddr()
+      document.getElementById('loading').style.display = 'none'
+      document.getElementById('perfil-content').style.display = 'block'
 
-        // Listeners para montar endereço em tempo real
-        ['f-rua','f-num','f-comp','f-bairro','f-cidade','f-cep','f-uf'].forEach(id => {
-          document.getElementById(id).addEventListener('input', buildAddr)
-        })
-      } catch(e) {
-        console.error(e)
-        document.getElementById('loading').innerHTML = '<i class="ti ti-alert-circle"></i> Erro ao carregar'
-      }
+      // Listeners para montar endereço em tempo real
+      ;['f-rua','f-num','f-comp','f-bairro','f-cidade','f-cep','f-uf'].forEach(id => {
+        document.getElementById(id).addEventListener('input', buildAddr)
+      })
     }
 
     function setFoto(url) {
