@@ -20,6 +20,8 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { min-height: 100%; }
+
     body {
       font-family: 'Bricolage Grotesque', system-ui, sans-serif;
       background: var(--bg);
@@ -28,24 +30,24 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding-top: 72px; /* clearance do ticker */
+      padding-top: 72px;
       padding-bottom: 40px;
       padding-left: 16px;
       padding-right: 16px;
       position: relative;
-      overflow-x: hidden;
     }
 
-    /* glows */
-    .bg-glow { position: fixed; border-radius: 50%; pointer-events: none; filter: blur(80px); opacity: .18; z-index: 0; }
-    .bg-glow-1 { width: 420px; height: 420px; background: #6C619B; top: -120px; right: -80px; }
-    .bg-glow-2 { width: 280px; height: 280px; background: #CD8472; bottom: -60px; left: -40px; }
+    /* glows — fixed no viewport, sem overflow hidden no body */
+    .bg-glow { position: fixed; border-radius: 50%; pointer-events: none; filter: blur(100px); z-index: 0; }
+    .bg-glow-1 { width: 500px; height: 500px; background: #6C619B; opacity: .22; top: -150px; right: -100px; }
+    .bg-glow-2 { width: 320px; height: 320px; background: #CD8472; opacity: .18; bottom: -80px; left: -60px; }
+    .bg-glow-3 { width: 250px; height: 250px; background: #9892c8; opacity: .08; top: 45%; left: 25%; }
 
     /* ticker */
     .ticker {
       position: fixed; top: 0; left: 0; right: 0; height: 36px;
-      background: rgba(108,97,155,.2);
-      border-bottom: 1px solid rgba(108,97,155,.3);
+      background: rgba(36,28,60,.85);
+      border-bottom: 1px solid rgba(108,97,155,.35);
       overflow: hidden; display: flex; align-items: center; z-index: 10;
     }
     .ticker-inner { display: flex; white-space: nowrap; animation: ticker 18s linear infinite; }
@@ -140,6 +142,7 @@
 
   <div class="bg-glow bg-glow-1"></div>
   <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-glow bg-glow-3"></div>
 
   <div class="ticker">
     <div class="ticker-inner">
