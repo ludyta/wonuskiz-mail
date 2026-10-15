@@ -261,7 +261,7 @@ function itemCardExpHTML(item, isOwner) {
   html += '<span class="ice-sep-sub">' + sepSub + '</span></div>'
   html += '</div>'
   if (isOwner) {
-    html += '<a href="novo-item.html?id=' + item.id + '&caixinha_id=' + item.caixinha_id + '" class="ice-edit-btn" title="Editar"><i class="ti ti-edit"></i></a>'
+    html += '<a href="novo-item.html?id=' + item.id + '&caixinha_id=' + item.caixinha_id + '" class="ice-edit-btn" title="Editar" onclick="if(typeof saveNavState===\'function\')saveNavState()"><i class="ti ti-edit"></i></a>'
   }
   html += '</div></div>'
 
