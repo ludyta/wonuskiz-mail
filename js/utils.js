@@ -215,7 +215,7 @@ function itemCardExpHTML(item, isOwner) {
   // 2. infos rápidas
   html += '<div class="ice-quick">'
   html += '<div class="ice-eyebrow">' + (item.tipo_item || '—') + '<span class="dot">·</span>' + qty + (qty === 1 ? ' item' : ' itens') + '</div>'
-  html += '<div class="ice-name">' + (item.membro || item.nome_set || '—') + '</div>'
+  html += '<div class="ice-name">' + (item.nome_set || '—') + '</div>'
   html += '<div class="ice-ceg">' + (item.nome_ceg || '—') + '</div>'
   html += '</div>'
 
@@ -225,10 +225,24 @@ function itemCardExpHTML(item, isOwner) {
   html += '<div class="ice-d-row"><span class="ice-d-label">Nome da CEG</span><span class="ice-d-val">' + (item.nome_ceg || '—') + '</span></div>'
   html += '<div class="ice-d-row"><span class="ice-d-label">Nome do Set</span><span class="ice-d-val">' + (item.nome_set || '—') + '</span></div>'
   html += '<div class="ice-d-row"><span class="ice-d-label">Linha / Nº</span><span class="ice-d-val">' + (item.linha_ref || '—') + '</span></div>'
-  if (item.claim) {
-    html += '<div class="ice-claim"><div class="ice-claim-lbl">Claim</div><div class="ice-claim-val">' + item.claim + '</div></div>'
-  }
   html += '</div>'
+
+  // claims
+  const claimsArr = (() => {
+    try { const p = JSON.parse(item.claims || ''); if (Array.isArray(p) && p.length) return p } catch {}
+    // fallback: claim antigo ou linha_ref
+    const legacy = [item.claim, item.linha_ref].filter(Boolean).join(' · ')
+    return legacy ? [legacy] : []
+  })()
+  if (claimsArr.length) {
+    html += '<div class="ice-claims">'
+    html += '<div class="ice-claims-hd">Claim</div>'
+    html += '<div class="ice-claims-hint">Nº do set + linha e coluna + nº da claim/membro(s)</div>'
+    claimsArr.forEach(c => {
+      html += '<div class="ice-claim-row">' + c + '</div>'
+    })
+    html += '</div>'
+  }
 
   // 4. footer separado
   html += '<div class="ice-footer">'
