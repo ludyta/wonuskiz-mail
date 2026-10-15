@@ -123,10 +123,17 @@
             <label class="form-label">Membro(s)</label>
             <input type="text" id="membro" class="form-input" placeholder="Ex: Seungmin, Bang Chan e Han...">
           </div>
-          <div class="form-field full">
+          <!-- claims dinâmicos -->
+          <div class="form-field full" id="claims-section">
             <label class="form-label">Claim</label>
-            <input type="text" id="claim" class="form-input" placeholder="Ex: Cards 3, 5, 8 · Bang Chan e Han Jisung...">
+            <span class="form-hint" style="display:block;margin-bottom:8px">Nº do set + linha e coluna + nº da claim/membro(s)</span>
+            <div id="claims-list" style="display:flex;flex-direction:column;gap:6px"></div>
+            <button type="button" class="btn btn-ghost" id="add-claim-btn" onclick="addClaim()" style="margin-top:8px;font-size:13px;padding:7px 12px">
+              <i class="ti ti-plus"></i> Adicionar claim
+            </button>
           </div>
+          <!-- campo claim legado — oculto, preservado para compatibilidade -->
+          <input type="hidden" id="claim" value="">
         </div>
       </div>
 
@@ -198,7 +205,7 @@
         document.getElementById('bc-current').textContent = 'Editar item'
         document.getElementById('save-label').textContent = 'Salvar alterações'
         document.getElementById('delete-btn').style.display = 'inline-flex'
-        const rows = await Sheets.getRange('Itens', 'A2:L1000')
+        const rows = await Sheets.getRange('Itens', 'A2:M1000')
         const row = rows.find(r => r[0] === editId)
         if (row) {
           document.getElementById('tipo_item').value = row[3] || ''
@@ -209,6 +216,10 @@
           document.getElementById('claim').value = row[8] || ''
           document.getElementById('quantidade').value = row[9] || 1
           document.getElementById('membro').value = row[11] || ''
+          // carrega claims novos (col M = row[12])
+          let claimsArr = []
+          try { claimsArr = JSON.parse(row[12] || '[]') } catch {}
+          claimsArr.forEach(c => addClaim(c))
           if (row[2]) {
             fotoUrlExistente = row[2]
             showPhotoPreview(row[2], 'foto existente', '')
@@ -275,6 +286,8 @@
 
         btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Salvando...'
 
+        const claimsArr = Array.from(document.querySelectorAll('.claim-entry-input'))
+          .map(i => i.value.trim()).filter(Boolean)
         const data = {
           caixinha_id: caixinhaId,
           foto_url: fotoUrl,
@@ -282,11 +295,12 @@
           linha_ref: document.getElementById('linha_ref').value.trim(),
           claim: document.getElementById('claim').value.trim(),
           quantidade: parseInt(document.getElementById('quantidade').value) || 1,
-          membro: document.getElementById('membro').value.trim()
+          membro: document.getElementById('membro').value.trim(),
+          claims: claimsArr.length ? JSON.stringify(claimsArr) : ''
         }
 
         if (editId) {
-          const rows = await Sheets.getRange('Itens', 'A2:L1000')
+          const rows = await Sheets.getRange('Itens', 'A2:M1000')
           const row = rows.find(r => r[0] === editId)
           data.caixinha_id = row ? row[1] : caixinhaId
           data.separado = row ? row[10] === 'TRUE' : false
@@ -329,6 +343,20 @@
         showToast('Erro ao excluir', 'error')
         cancelDelete()
       }
+    }
+
+    let claimCount = 0
+    function addClaim(value = '') {
+      claimCount++
+      const list = document.getElementById('claims-list')
+      const div = document.createElement('div')
+      div.style.cssText = 'display:flex;gap:6px;align-items:center'
+      div.innerHTML = `
+        <input type="text" class="form-input claim-entry-input" value="${value.replace(/"/g,'&quot;')}" placeholder="Ex: s37, s39 · Felix e Jeongin · set 6" style="flex:1">
+        <button type="button" onclick="this.parentElement.remove()" style="flex-shrink:0;width:34px;height:34px;border-radius:8px;border:1.5px solid var(--bo);background:transparent;color:var(--ts);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+      `
+      list.appendChild(div)
+      div.querySelector('input').focus()
     }
 
     init()
