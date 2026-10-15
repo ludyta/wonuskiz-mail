@@ -125,12 +125,16 @@
           </div>
           <!-- claims dinâmicos -->
           <div class="form-field full" id="claims-section">
-            <label class="form-label">Claim</label>
-            <span class="form-hint" style="display:block;margin-bottom:8px">Nº do set + linha e coluna + nº da claim/membro(s)</span>
-            <div id="claims-list" style="display:flex;flex-direction:column;gap:6px"></div>
-            <button type="button" class="btn btn-ghost" id="add-claim-btn" onclick="addClaim()" style="margin-top:8px;font-size:13px;padding:7px 12px">
-              <i class="ti ti-plus"></i> Adicionar claim
-            </button>
+            <div class="claims-wrap" id="claims-wrap">
+              <div class="claims-head">
+                <span class="claims-head-lbl">Claim</span>
+                <p class="claims-hint">Nº do set + linha e coluna + nº da claim/membro(s)</p>
+              </div>
+              <div id="claims-list"></div>
+              <button type="button" class="add-claim-btn" id="add-claim-btn" onclick="addClaim()">
+                <i class="ti ti-plus"></i> Adicionar claim
+              </button>
+            </div>
           </div>
           <!-- campo claim legado — oculto, preservado para compatibilidade -->
           <input type="hidden" id="claim" value="">
@@ -146,11 +150,12 @@
           <button class="btn btn-sm" style="background:#C0392B;color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:13px;cursor:pointer" onclick="deleteItem()">Excluir</button>
           <button class="btn btn-ghost btn-sm" style="padding:6px 14px;font-size:13px" onclick="cancelDelete()">Cancelar</button>
         </div>
-        <span style="flex:1"></span>
-        <a href="#" id="cancel-btn" class="btn btn-ghost">Cancelar</a>
-        <button class="btn btn-primary" id="save-btn" onclick="save()">
-          <i class="ti ti-check"></i> <span id="save-label">Salvar item</span>
-        </button>
+        <div class="form-actions-right">
+          <a href="#" id="cancel-btn" class="btn btn-ghost">Cancelar</a>
+          <button class="btn btn-primary" id="save-btn" onclick="save()">
+            <i class="ti ti-check"></i> <span id="save-label">Salvar item</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -286,8 +291,12 @@
 
         btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Salvando...'
 
-        const claimsArr = Array.from(document.querySelectorAll('.claim-entry-input'))
-          .map(i => i.value.trim()).filter(Boolean)
+        const claimsArr = Array.from(document.querySelectorAll('.claim-item-wrap')).map(wrap => {
+          const set = wrap.querySelector('.ci-set')?.value.trim() || ''
+          const membro = wrap.querySelector('.ci-membro')?.value.trim() || ''
+          const linha = wrap.querySelector('.ci-linha')?.value.trim() || ''
+          return { set, membro, linha }
+        }).filter(c => c.set || c.membro || c.linha)
         const data = {
           caixinha_id: caixinhaId,
           foto_url: fotoUrl,
@@ -348,15 +357,45 @@
     let claimCount = 0
     function addClaim(value = '') {
       claimCount++
+      const n = claimCount
       const list = document.getElementById('claims-list')
+      // value pode ser objeto {set,membro,linha} ou string legada
+      const isObj = value && typeof value === 'object'
+      const setVal = isObj ? (value.set || '') : ''
+      const membroVal = isObj ? (value.membro || '') : (typeof value === 'string' ? value : '')
+      const linhaVal = isObj ? (value.linha || '') : ''
       const div = document.createElement('div')
-      div.style.cssText = 'display:flex;gap:6px;align-items:center'
+      div.className = 'claim-item-wrap'
+      div.dataset.n = n
       div.innerHTML = `
-        <input type="text" class="form-input claim-entry-input" value="${value.replace(/"/g,'&quot;')}" placeholder="Ex: s37, s39 · Felix e Jeongin · set 6" style="flex:1">
-        <button type="button" onclick="this.parentElement.remove()" style="flex-shrink:0;width:34px;height:34px;border-radius:8px;border:1.5px solid var(--bo);background:transparent;color:var(--ts);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+        <div class="claim-item-hd">
+          <span class="claim-item-num">${n}</span>
+          <button type="button" class="claim-remove-btn" onclick="removeClaim(this)">✕</button>
+        </div>
+        <div class="claim-item-fields">
+          <div class="claim-field-group">
+            <span class="claim-field-lbl">Nº do Set</span>
+            <input type="text" class="form-input ci-set" value="${setVal.replace(/"/g,'&quot;')}" placeholder="Ex: Set 4, Set 6...">
+          </div>
+          <div class="claim-field-group">
+            <span class="claim-field-lbl">Nº da Claim / Membro(s)</span>
+            <input type="text" class="form-input ci-membro" value="${membroVal.replace(/"/g,'&quot;')}" placeholder="Ex: Felix e Jeongin">
+          </div>
+          <div class="claim-field-group">
+            <span class="claim-field-lbl">Linha + Coluna</span>
+            <input type="text" class="form-input ci-linha" value="${linhaVal.replace(/"/g,'&quot;')}" placeholder="Ex: s37, s39">
+          </div>
+        </div>
       `
       list.appendChild(div)
-      div.querySelector('input').focus()
+      div.querySelector('.ci-set').focus()
+    }
+
+    function removeClaim(btn) {
+      const wrap = btn.closest('.claim-item-wrap')
+      if (wrap) wrap.remove()
+      // renumera badges
+      document.querySelectorAll('.claim-item-num').forEach((el, i) => { el.textContent = i + 1 })
     }
 
     init()
