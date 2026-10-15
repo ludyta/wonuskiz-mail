@@ -1051,10 +1051,12 @@ body {
 .ice-d-row:last-of-type{border-bottom:none}
 .ice-d-label{font-family:'DM Mono',monospace;font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ts);flex-shrink:0;padding-top:1px;min-width:88px;opacity:.8}
 .ice-d-val{font-size:12px;font-weight:600;color:var(--tx);text-align:right;line-height:1.4;min-width:0}
-/* claim */
-.ice-claim{background:var(--sf2);border-radius:8px;border-left:3px solid var(--pu);padding:9px 11px;margin:6px 0 10px;opacity:.92}
-.ice-claim-lbl{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--cr);margin-bottom:4px}
-.ice-claim-val{font-size:12px;color:var(--tx);line-height:1.5;font-weight:500}
+/* claims */
+.ice-claims{padding:8px 14px 12px}
+.ice-claims-hd{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--cr);margin-bottom:3px}
+.ice-claims-hint{font-size:10px;color:var(--ts);line-height:1.4;margin-bottom:8px;opacity:.75}
+.ice-claim-row{background:var(--sf2);border-radius:8px;border-left:3px solid var(--pu);padding:9px 11px;margin-bottom:6px;font-size:12px;color:var(--tx);line-height:1.5;font-weight:500}
+.ice-claim-row:last-child{margin-bottom:0}
 
 /* 4. footer separado */
 .ice-footer{display:flex;align-items:center;gap:8px;padding:9px 10px;border-top:1px dashed var(--bo);transition:background .2s,border-top-color .2s}
