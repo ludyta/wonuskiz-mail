@@ -158,12 +158,12 @@ function closeLightbox() {
   document.body.style.overflow = ''
 }
 
-// Delegated click para ampliar — captura cliques em overlay e no span "ampliar"
+// Delegated click para ampliar — captura cliques no botão de zoom
 document.addEventListener('click', function(e) {
-  const overlay = e.target.closest('.ice-img-overlay[data-lightbox]')
-  if (overlay) {
+  const btn = e.target.closest('.ice-zoom-btn[data-lightbox]')
+  if (btn) {
     e.stopPropagation()
-    openLightbox(overlay.dataset.lightbox)
+    openLightbox(btn.dataset.lightbox)
   }
 })
 
@@ -189,63 +189,52 @@ function itemCardExpHTML(item, isOwner) {
   isOwner = isOwner !== false
   const hasImg = item.foto_url && item.foto_url.length > 0
   const separado = getSepState(item.id)
-  const sepDone = separado ? 'done' : ''
-  const chkOn = separado ? 'on' : ''
+  const cardDone = separado ? ' done' : ''
+  const chkOn = separado ? ' on' : ''
+  const sepDone = separado ? ' done' : ''
   const sepLbl = separado ? 'Separado ✓' : 'Marcar como separado'
   const sepSub = separado ? 'toque para desmarcar' : 'toque para confirmar'
-  const sepColor = separado ? 'color:#3edc78' : ''
-  const imgCursor = hasImg ? 'cursor:zoom-in' : 'cursor:default'
-  const imgData = hasImg ? ' data-lightbox="' + item.foto_url.replace(/"/g, '&quot;') + '"' : ''
+  const imgLbData = hasImg ? ' data-lightbox="' + item.foto_url.replace(/"/g, '&quot;') + '"' : ''
+  const qty = item.quantidade || 1
 
-  let html = '<div class="item-card-exp" id="ice-' + item.id + '">'
+  let html = '<div class="item-card-exp' + cardDone + '" id="ice-' + item.id + '">'
 
-  // Imagem
+  // 1. foto
   html += '<div class="ice-img-wrap">'
   if (hasImg) {
     html += '<img src="' + item.foto_url + '" alt="foto" loading="lazy">'
   } else {
     html += '<div class="ice-img-placeholder"><i class="ti ti-photo"></i></div>'
   }
-  html += '<div class="ice-img-overlay"' + imgData + ' style="' + imgCursor + '">'
-  html += '<span class="ice-qty-badge">× ' + (item.quantidade || 1) + '</span>'
   if (hasImg) {
-    html += '<span class="ice-zoom-hint"><i class="ti ti-zoom-in" style="font-size:10px"></i> ampliar</span>'
-  } else {
-    html += '<span></span>'
+    html += '<div class="ice-zoom-btn"' + imgLbData + '><i class="ti ti-zoom-in"></i></div>'
   }
-  html += '</div></div>'
-
-  // Cabeçalho
-  html += '<div class="ice-header">'
-  html += '<div class="ice-type">' + (item.tipo_item || '—') + '</div>'
-  html += '<div class="ice-setname">' + (item.claim || item.nome_set || '—') + '</div>'
-  html += '<div class="ice-ref">' + (item.linha_ref || '—') + '</div>'
+  html += '<div class="ice-qty-badge"><i class="ti ti-package"></i>' + qty + (qty === 1 ? ' item' : ' itens') + '</div>'
   html += '</div>'
 
-  // Toggle detalhes
-  html += '<div class="ice-details-toggle" onclick="toggleIceDetails(this)">'
-  html += '<span class="ice-toggle-lbl"><i class="ti ti-list-details"></i> Exibir detalhes</span>'
-  html += '<i class="ti ti-chevron-down ice-chevron"></i>'
+  // 2. infos rápidas
+  html += '<div class="ice-quick">'
+  html += '<div class="ice-eyebrow">' + (item.tipo_item || '—') + '<span class="dot">·</span>' + qty + (qty === 1 ? ' item' : ' itens') + '</div>'
+  html += '<div class="ice-name">' + (item.claim || item.nome_set || '—') + '</div>'
+  html += '<div class="ice-ceg">' + (item.nome_ceg || '—') + '</div>'
   html += '</div>'
 
-  // Detalhes
+  // 3. detalhes
   html += '<div class="ice-details">'
-  html += '<div class="ice-d-row"><span class="ice-d-label">Tipo</span><span class="ice-d-val">' + (item.tipo_item || '—') + '</span></div>'
-  html += '<div class="ice-d-row"><span class="ice-d-label">CEG</span><span class="ice-d-val">' + (item.tipo_ceg || '—') + '</span></div>'
+  html += '<div class="ice-d-row"><span class="ice-d-label">Tipo de CEG</span><span class="ice-d-val">' + (item.tipo_ceg || '—') + '</span></div>'
   html += '<div class="ice-d-row"><span class="ice-d-label">Nome da CEG</span><span class="ice-d-val">' + (item.nome_ceg || '—') + '</span></div>'
-  html += '<div class="ice-d-row"><span class="ice-d-label">Set</span><span class="ice-d-val">' + (item.nome_set || '—') + '</span></div>'
+  html += '<div class="ice-d-row"><span class="ice-d-label">Nome do Set</span><span class="ice-d-val">' + (item.nome_set || '—') + '</span></div>'
   html += '<div class="ice-d-row"><span class="ice-d-label">Linha / Nº</span><span class="ice-d-val">' + (item.linha_ref || '—') + '</span></div>'
-  html += '<div class="ice-d-row"><span class="ice-d-label">Quantidade</span><span class="ice-d-val qty">' + (item.quantidade || 1) + ' itens</span></div>'
   if (item.claim) {
     html += '<div class="ice-claim"><div class="ice-claim-lbl">Claim</div><div class="ice-claim-val">' + item.claim + '</div></div>'
   }
   html += '</div>'
 
-  // Footer
+  // 4. footer separado
   html += '<div class="ice-footer">'
-  html += '<div class="ice-sep-btn ' + sepDone + '" onclick="toggleIceSep(event,this,\'' + item.id + '\')">'
-  html += '<div class="ice-big-chk ' + chkOn + '"></div>'
-  html += '<div><span class="ice-sep-lbl" style="' + sepColor + '">' + sepLbl + '</span>'
+  html += '<div class="ice-sep-btn' + sepDone + '" onclick="toggleIceSep(event,this,\'' + item.id + '\')">'
+  html += '<div class="ice-big-chk' + chkOn + '"></div>'
+  html += '<div><span class="ice-sep-lbl">' + sepLbl + '</span>'
   html += '<span class="ice-sep-sub">' + sepSub + '</span></div>'
   html += '</div>'
   if (isOwner) {
@@ -256,29 +245,20 @@ function itemCardExpHTML(item, isOwner) {
   return html
 }
 
-function toggleIceDetails(toggle) {
-  const details = toggle.nextElementSibling
-  const chevron = toggle.querySelector('.ice-chevron')
-  const lbl = toggle.querySelector('.ice-toggle-lbl')
-  const isOpen = details.classList.contains('open')
-  details.classList.toggle('open', !isOpen)
-  chevron.classList.toggle('open', !isOpen)
-  lbl.innerHTML = isOpen
-    ? '<i class="ti ti-list-details"></i> Exibir detalhes'
-    : '<i class="ti ti-list-details"></i> Ocultar detalhes'
-}
-
 function toggleIceSep(e, btn, itemId) {
   e.stopPropagation()
   const isDone = btn.classList.contains('done')
   const newVal = !isDone
+  // card pai
+  const card = btn.closest('.item-card-exp')
+  if (card) card.classList.toggle('done', newVal)
+  // botão
   btn.classList.toggle('done', newVal)
   const chk = btn.querySelector('.ice-big-chk')
   chk.classList.toggle('on', newVal)
   const lbl = btn.querySelector('.ice-sep-lbl')
   const sub = btn.querySelector('.ice-sep-sub')
   lbl.textContent = newVal ? 'Separado ✓' : 'Marcar como separado'
-  lbl.style.color = newVal ? '#3edc78' : ''
   sub.textContent = newVal ? 'toque para desmarcar' : 'toque para confirmar'
   setSepState(itemId, newVal)
 }
