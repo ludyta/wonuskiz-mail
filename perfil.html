@@ -305,14 +305,8 @@
   <script src="js/drive.js"></script>
   <script src="js/auth.js"></script>
   <script>
-    // DEBUG — remove depois
-    document.getElementById('loading').innerHTML = '<i class="ti ti-loader ti-spin"></i> Iniciando...'
-
     Theme.init()
-    document.getElementById('loading').innerHTML = '<i class="ti ti-loader ti-spin"></i> Verificando auth...'
-    const authOk = Auth.requireAuth()
-    document.getElementById('loading').innerHTML = '<i class="ti ti-loader ti-spin"></i> Auth: ' + authOk + ' | sheet: ' + Sheets.spreadsheetId + ' | token: ' + (Drive.accessToken ? 'ok' : 'null')
-    if (!authOk) { window.location.href = 'index.html'; throw new Error('Not authenticated') }
+    if (!Auth.requireAuth()) { window.location.href = 'index.html'; throw new Error('Not authenticated') }
 
     let fotoUrl = ''
 
@@ -326,64 +320,41 @@
       document.getElementById('avatar-menu').classList.toggle('open')
     }
 
-    function dbg(msg) {
-      document.getElementById('loading').innerHTML = '<i class="ti ti-loader ti-spin"></i> ' + msg
-    }
-
     async function load() {
-      dbg('1: iniciando load...')
-
-      // Carrega dados públicos (nome e @) do Sheets — falha silenciosa
-      let pub = { nome: '', handle: '' }
-      try {
-        dbg('2: chamando getPerfilPublico...')
-        pub = await Sheets.getPerfilPublico()
-        dbg('3: getPerfilPublico ok — nome=' + pub.nome)
-      } catch(e) {
-        dbg('ERRO em getPerfilPublico: ' + e.message)
-        await new Promise(r => setTimeout(r, 2000))
-      }
-
-      if (pub.nome) document.getElementById('f-nome').value = pub.nome
-      if (pub.handle) document.getElementById('f-handle').value = pub.handle
-
-      // Carrega dados privados (endereço + foto) do Drive — falha silenciosa
-      try {
-        dbg('4: chamando loadPerfilPrivado...')
-        const priv = await Drive.loadPerfilPrivado()
-        dbg('5: loadPerfilPrivado ok — ' + (priv ? 'tem dados' : 'sem dados'))
-        if (priv) {
-          if (priv.foto_url) setFoto(priv.foto_url)
-          if (priv.cep) document.getElementById('f-cep').value = priv.cep
-          if (priv.uf) document.getElementById('f-uf').value = priv.uf
-          if (priv.rua) document.getElementById('f-rua').value = priv.rua
-          if (priv.num) document.getElementById('f-num').value = priv.num
-          if (priv.comp) document.getElementById('f-comp').value = priv.comp
-          if (priv.bairro) document.getElementById('f-bairro').value = priv.bairro
-          if (priv.cidade) document.getElementById('f-cidade').value = priv.cidade
-        }
-      } catch(e) {
-        dbg('ERRO em loadPerfilPrivado: ' + e.message)
-        await new Promise(r => setTimeout(r, 2000))
-      }
-
-      dbg('6: montando avatar e endereço...')
-
-      // Inicial do avatar na navbar
-      const inicial = (pub.nome || 'l')[0].toLowerCase()
-      document.getElementById('user-avatar').textContent = inicial
-      document.getElementById('foto-inicial').textContent = inicial
-
-      buildAddr()
-      dbg('7: mostrando conteúdo...')
+      // 1. Mostrar conteúdo imediatamente — sem esperar nada
       document.getElementById('loading').style.display = 'none'
       document.getElementById('perfil-content').style.display = 'block'
 
-      // Listeners para montar endereço em tempo real
+      // 2. Listeners de endereço
       ;['f-rua','f-num','f-comp','f-bairro','f-cidade','f-cep','f-uf'].forEach(id => {
         document.getElementById(id).addEventListener('input', buildAddr)
       })
-      dbg('8: concluído!')
+
+      // 3. Carrega dados públicos em background
+      try {
+        const pub = await Sheets.getPerfilPublico()
+        if (pub.nome) {
+          document.getElementById('f-nome').value = pub.nome
+          document.getElementById('user-avatar').textContent = pub.nome[0].toLowerCase()
+          document.getElementById('foto-inicial').textContent = pub.nome[0].toLowerCase()
+        }
+        if (pub.handle) document.getElementById('f-handle').value = pub.handle
+      } catch(e) { console.warn('getPerfilPublico:', e) }
+
+      // 4. Carrega dados privados em background
+      try {
+        const priv = await Drive.loadPerfilPrivado()
+        if (priv) {
+          if (priv.foto_url) setFoto(priv.foto_url)
+          if (priv.cep)    { document.getElementById('f-cep').value    = priv.cep;    buildAddr() }
+          if (priv.uf)     { document.getElementById('f-uf').value     = priv.uf;     buildAddr() }
+          if (priv.rua)    { document.getElementById('f-rua').value    = priv.rua;    buildAddr() }
+          if (priv.num)    { document.getElementById('f-num').value    = priv.num;    buildAddr() }
+          if (priv.comp)   { document.getElementById('f-comp').value   = priv.comp;   buildAddr() }
+          if (priv.bairro) { document.getElementById('f-bairro').value = priv.bairro; buildAddr() }
+          if (priv.cidade) { document.getElementById('f-cidade').value = priv.cidade; buildAddr() }
+        }
+      } catch(e) { console.warn('loadPerfilPrivado:', e) }
     }
 
     function setFoto(url) {
