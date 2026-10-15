@@ -20,7 +20,7 @@
 
     <div id="gom-header" style="display:none">
       <div class="gom-hero">
-        <div class="gom-owner">ludytaa ✦</div>
+        <div class="gom-owner" id="g-owner">✦</div>
         <div class="gom-title" id="g-nome"></div>
         <div class="gom-chips" id="g-chips"></div>
       </div>
@@ -72,15 +72,27 @@
           const json = JSON.parse(text.substring(47, text.length - 2))
           return json.table.rows.map(r => r.c.map(c => c ? (c.v !== null && c.v !== undefined ? String(c.v) : '') : ''))
         }
-        const caixinhasRows = await readSheet('Caixinhas')
+        const [caixinhasRows, itensRows, configRows] = await Promise.all([
+          readSheet('Caixinhas'),
+          readSheet('Itens'),
+          readSheet('Config')
+        ])
         const caixinha = caixinhasRows.find(r => r[0] === caixinhaId)
         if (!caixinha) { showError(); return }
-        const itensRows = await readSheet('Itens')
         const itens = itensRows.filter(r => r[0] && r[1] === caixinhaId).map(r => ({
           id:r[0], caixinha_id:r[1], foto_url:r[2], tipo_item:r[3], tipo_ceg:r[4],
           nome_ceg:r[5], nome_set:r[6], linha_ref:r[7], claim:r[8],
           quantidade:parseInt(r[9])||1, separado:r[10]==='TRUE'
         }))
+
+        // Lê nome e @ do perfil da aba Config
+        let perfilNome = '', perfilHandle = ''
+        configRows.forEach(r => {
+          if (r[0] === 'perfil_nome') perfilNome = r[1] || ''
+          if (r[0] === 'perfil_handle') perfilHandle = r[1] || ''
+        })
+        const ownerParts = [perfilNome, perfilHandle].filter(Boolean)
+        document.getElementById('g-owner').textContent = (ownerParts.length ? ownerParts.join(' · ') : 'wonuskiz') + ' ✦'
 
         document.getElementById('loading').style.display = 'none'
         document.getElementById('g-nome').textContent = caixinha[1] || 'Envio'
