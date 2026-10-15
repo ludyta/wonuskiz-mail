@@ -195,7 +195,8 @@ const Sheets = {
   async getConfig() {
     const rows = await this.getRange('Config', 'A2:B1000')
     const config = {
-      tipo_item: [], tipo_ceg: [], nome_ceg: [], nome_set: [], comunidade: []
+      tipo_item: [], tipo_ceg: [], nome_ceg: [], nome_set: [], comunidade: [],
+      perfil_nome: [], perfil_handle: []
     }
     rows
       .filter(r => r[0] && r[0] !== 'tipo')
@@ -214,6 +215,27 @@ const Sheets = {
     const rowIndex = rows.findIndex(r => r[0] === tipo && r[1] === valor)
     if (rowIndex === -1) return
     return this.clearRow('Config', rowIndex + 1)
+  },
+
+  // ==== PERFIL (nome e @ — público, lido pelo caixinha-publica.html) ====
+  async getPerfilPublico() {
+    const config = await this.getConfig()
+    return {
+      nome: config.perfil_nome ? config.perfil_nome[0] || '' : '',
+      handle: config.perfil_handle ? config.perfil_handle[0] || '' : ''
+    }
+  },
+
+  async savePerfilPublico(nome, handle) {
+    // Remove valores antigos se existirem
+    const rows = await this.getRange('Config', 'A:B')
+    const toDelete = rows
+      .map((r, i) => ({ row: i + 1, tipo: r[0], val: r[1] }))
+      .filter(r => r.tipo === 'perfil_nome' || r.tipo === 'perfil_handle')
+    for (const r of toDelete) await this.clearRow('Config', r.row)
+    // Grava novos valores
+    if (nome) await this.appendRow('Config', ['perfil_nome', nome])
+    if (handle) await this.appendRow('Config', ['perfil_handle', handle])
   },
 
   // ==== RASTREAMENTO ====
