@@ -4,84 +4,206 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>wonuskiz-mail</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,900&family=DM+Mono:wght@400;500&display=swap">
+  <style>
+    :root {
+      --bg:   #0f0b1a;
+      --card: #1c1a2e;
+      --bo:   #2e2b45;
+      --roxo: #6C619B;
+      --salm: #CD8472;
+      --tx:   #F7F8EF;
+      --ts:   #9892c8;
+      --muted:#6b6890;
+      color-scheme: dark;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--tx);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 72px; /* clearance do ticker */
+      padding-bottom: 40px;
+      padding-left: 16px;
+      padding-right: 16px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* glows */
+    .bg-glow { position: fixed; border-radius: 50%; pointer-events: none; filter: blur(80px); opacity: .18; z-index: 0; }
+    .bg-glow-1 { width: 420px; height: 420px; background: #6C619B; top: -120px; right: -80px; }
+    .bg-glow-2 { width: 280px; height: 280px; background: #CD8472; bottom: -60px; left: -40px; }
+
+    /* ticker */
+    .ticker {
+      position: fixed; top: 0; left: 0; right: 0; height: 36px;
+      background: rgba(108,97,155,.2);
+      border-bottom: 1px solid rgba(108,97,155,.3);
+      overflow: hidden; display: flex; align-items: center; z-index: 10;
+    }
+    .ticker-inner { display: flex; white-space: nowrap; animation: ticker 18s linear infinite; }
+    @keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+    .ticker-item { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ts); padding: 0 16px; }
+    .ticker-sep { color: var(--salm); padding: 0 4px; }
+
+    /* layout */
+    .login-wrap {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 400px;
+      display: flex; flex-direction: column; align-items: center; gap: 28px;
+    }
+
+    /* hero */
+    .login-hero { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .login-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--salm);
+      background: rgba(205,132,114,.15);
+      border: 1px solid rgba(205,132,114,.3);
+      border-radius: 999px; padding: 4px 12px;
+    }
+    .login-logo { font-size: 52px; font-weight: 900; letter-spacing: -.04em; color: var(--tx); line-height: 1; }
+    .login-logo .star { color: var(--roxo); margin-right: 4px; }
+    .login-tagline { font-size: 15px; color: var(--ts); line-height: 1.5; max-width: 280px; }
+
+    /* card */
+    .login-card {
+      width: 100%; background: var(--card);
+      border: 1px solid var(--bo); border-radius: 24px;
+      padding: 24px; display: flex; flex-direction: column; gap: 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.4), 0 0 0 1px rgba(108,97,155,.1);
+    }
+    .login-card-title { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+    /* botão */
+    .btn-google {
+      width: 100%; padding: 14px 20px;
+      background: #6C619B; color: #F7F8EF;
+      border: none; border-radius: 40px 40px 40px 6px;
+      font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 15px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+      box-shadow: 0 4px 20px rgba(108,97,155,.35);
+      transition: transform .12s, box-shadow .12s;
+    }
+    .btn-google:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(108,97,155,.45); }
+    .btn-google:active { transform: translateY(0); }
+    .btn-google.loading { opacity: .7; pointer-events: none; }
+    .btn-google.loading .g-icon { display: none; }
+    .btn-google .spinner {
+      display: none; width: 18px; height: 18px;
+      border: 2px solid rgba(247,248,239,.3); border-top-color: #F7F8EF;
+      border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
+    }
+    .btn-google.loading .spinner { display: block; }
+    @keyframes spin { to { transform: rotate(360deg) } }
+
+    /* divider */
+    .divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 11px; letter-spacing: .06em; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--bo); }
+
+    /* features */
+    .features { display: flex; flex-direction: column; gap: 10px; }
+    .feature-item { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--ts); line-height: 1.4; }
+    .feature-icon {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(108,97,155,.18); border: 1px solid rgba(108,97,155,.25);
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+
+    /* footer */
+    .login-footer { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.6; }
+
+    /* overlay loading */
+    .loading-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(15,11,26,.88); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; flex-direction: column; gap: 14px; z-index: 200;
+    }
+    .loading-overlay.show { display: flex; }
+    .loading-overlay-spinner {
+      width: 44px; height: 44px;
+      border: 3px solid rgba(108,97,155,.2); border-top-color: #6C619B;
+      border-radius: 50%; animation: spin .8s linear infinite;
+    }
+    .loading-overlay-text { font-size: 14px; color: var(--tx); font-weight: 700; }
+    .loading-overlay-sub { font-size: 12px; color: var(--ts); margin-top: -6px; }
+  </style>
 </head>
-<body class="dark">
+<body>
 
-  <!-- glows de fundo -->
-  <div class="login-glow login-glow-1"></div>
-  <div class="login-glow login-glow-2"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
 
-  <!-- ticker animado -->
-  <div class="login-ticker">
-    <div class="login-ticker-inner">
-      <span class="login-ticker-item">wonuskiz mail</span><span class="login-ticker-sep">✦</span>
-      <span class="login-ticker-item">kpop cegs</span><span class="login-ticker-sep">♡</span>
-      <span class="login-ticker-item">envios nacionais</span><span class="login-ticker-sep">✦</span>
-      <span class="login-ticker-item">seus photocards chegando</span><span class="login-ticker-sep">♡</span>
-      <span class="login-ticker-item">wonuskiz mail</span><span class="login-ticker-sep">✦</span>
-      <span class="login-ticker-item">kpop cegs</span><span class="login-ticker-sep">♡</span>
-      <span class="login-ticker-item">envios nacionais</span><span class="login-ticker-sep">✦</span>
-      <span class="login-ticker-item">seus photocards chegando</span><span class="login-ticker-sep">♡</span>
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span class="ticker-item">wonuskiz mail</span><span class="ticker-sep">✦</span>
+      <span class="ticker-item">kpop cegs</span><span class="ticker-sep">♡</span>
+      <span class="ticker-item">envios nacionais</span><span class="ticker-sep">✦</span>
+      <span class="ticker-item">seus photocards chegando</span><span class="ticker-sep">♡</span>
+      <span class="ticker-item">wonuskiz mail</span><span class="ticker-sep">✦</span>
+      <span class="ticker-item">kpop cegs</span><span class="ticker-sep">♡</span>
+      <span class="ticker-item">envios nacionais</span><span class="ticker-sep">✦</span>
+      <span class="ticker-item">seus photocards chegando</span><span class="ticker-sep">♡</span>
     </div>
   </div>
 
-  <!-- conteúdo central -->
-  <div class="login-page">
-    <div class="login-wrap">
+  <div class="login-wrap">
 
-      <!-- hero -->
-      <div class="login-hero">
-        <div class="login-badge">mail ✦</div>
-        <div class="login-logo">✦ wonuskiz</div>
-        <p class="login-sub">seus pedidos de envio nacional, organizadinhos</p>
-      </div>
+    <div class="login-hero">
+      <div class="login-badge">mail ✦</div>
+      <div class="login-logo"><span class="star">✦</span>wonuskiz</div>
+      <p class="login-tagline">seus pedidos de envio nacional, organizadinhos</p>
+    </div>
 
-      <!-- card -->
-      <div class="login-card">
-        <div class="login-card-label">Entrar na sua conta</div>
+    <div class="login-card">
+      <div class="login-card-title">Entrar na sua conta</div>
 
-        <button class="login-btn" id="login-btn" onclick="handleLogin()">
-          <svg class="login-btn-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-            <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
-            <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-          </svg>
-          <div class="login-btn-spinner"></div>
-          <span class="login-btn-text">Entrar com Google</span>
-        </button>
+      <button class="btn-google" id="login-btn" onclick="handleLogin()">
+        <svg class="g-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
+          <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        <div class="spinner"></div>
+        Entrar com Google
+      </button>
 
-        <div class="login-divider">o que você encontra aqui</div>
+      <div class="divider">o que você encontra aqui</div>
 
-        <div class="login-features">
-          <div class="login-feature">
-            <div class="login-feature-icon">📦</div>
-            <span>Acompanhe suas caixinhas de envio nacional em um só lugar</span>
-          </div>
-          <div class="login-feature">
-            <div class="login-feature-icon">✦</div>
-            <span>Compartilhe sua lista de itens com a GOM de forma rápida</span>
-          </div>
-          <div class="login-feature">
-            <div class="login-feature-icon">♡</div>
-            <span>Organize seus photocards, merchs, álbuns e outros por CEG</span>
-          </div>
+      <div class="features">
+        <div class="feature-item">
+          <div class="feature-icon">📦</div>
+          <span>Acompanhe suas caixinhas de envio nacional em um só lugar</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">✦</div>
+          <span>Compartilhe sua lista de itens com a GOM de forma rápida</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">♡</div>
+          <span>Organize seus photocards, merchs, álbuns e outros por CEG</span>
         </div>
       </div>
-
-      <p class="login-footer">
-        Seus dados ficam salvos no seu Google Drive.<br>Só você tem acesso.
-      </p>
-
     </div>
+
+    <p class="login-footer">
+      Seus dados ficam salvos no seu Google Drive.<br>Só você tem acesso.
+    </p>
+
   </div>
 
-  <!-- overlay de loading após clique -->
-  <div class="login-overlay" id="login-overlay">
-    <div class="login-overlay-spinner"></div>
-    <div class="login-overlay-text">Entrando na sua conta...</div>
-    <div class="login-overlay-sub">isso pode levar alguns segundos</div>
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-overlay-spinner"></div>
+    <div class="loading-overlay-text">Entrando na sua conta...</div>
+    <div class="loading-overlay-sub">isso pode levar alguns segundos</div>
   </div>
 
   <script src="js/utils.js"></script>
@@ -97,21 +219,15 @@
     function handleLogin() {
       const btn = document.getElementById('login-btn')
       btn.classList.add('loading')
-      // pequeno delay para mostrar o spinner antes do popup do Google abrir
-      setTimeout(() => {
-        Auth.login()
-        // overlay após o popup (aguarda o usuário interagir com o Google)
-        // o loading some automaticamente quando a página redireciona
-      }, 150)
+      setTimeout(() => Auth.login(), 150)
     }
 
-    // Se o login falhar (ex: usuário fechar o popup), remove o loading
     const _origHandleToken = Auth.handleToken.bind(Auth)
     Auth.handleToken = function(resp) {
       if (resp.error) {
         document.getElementById('login-btn').classList.remove('loading')
       } else {
-        document.getElementById('login-overlay').classList.add('show')
+        document.getElementById('loading-overlay').classList.add('show')
       }
       _origHandleToken(resp)
     }
