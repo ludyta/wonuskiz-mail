@@ -120,6 +120,10 @@
             </div>
           </div>
           <div class="form-field full">
+            <label class="form-label">Membro(s)</label>
+            <input type="text" id="membro" class="form-input" placeholder="Ex: Seungmin, Bang Chan e Han...">
+          </div>
+          <div class="form-field full">
             <label class="form-label">Claim</label>
             <input type="text" id="claim" class="form-input" placeholder="Ex: Cards 3, 5, 8 · Bang Chan e Han Jisung...">
           </div>
@@ -204,6 +208,7 @@
           document.getElementById('linha_ref').value = row[7] || ''
           document.getElementById('claim').value = row[8] || ''
           document.getElementById('quantidade').value = row[9] || 1
+          document.getElementById('membro').value = row[11] || ''
           if (row[2]) {
             fotoUrlExistente = row[2]
             showPhotoPreview(row[2], 'foto existente', '')
@@ -276,7 +281,8 @@
           tipo_item, tipo_ceg, nome_ceg, nome_set,
           linha_ref: document.getElementById('linha_ref').value.trim(),
           claim: document.getElementById('claim').value.trim(),
-          quantidade: parseInt(document.getElementById('quantidade').value) || 1
+          quantidade: parseInt(document.getElementById('quantidade').value) || 1,
+          membro: document.getElementById('membro').value.trim()
         }
 
         if (editId) {
