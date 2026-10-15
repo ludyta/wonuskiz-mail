@@ -224,7 +224,6 @@ function itemCardExpHTML(item, isOwner) {
   html += '<div class="ice-d-row"><span class="ice-d-label">Tipo de CEG</span><span class="ice-d-val">' + (item.tipo_ceg || '—') + '</span></div>'
   html += '<div class="ice-d-row"><span class="ice-d-label">Nome da CEG</span><span class="ice-d-val">' + (item.nome_ceg || '—') + '</span></div>'
   html += '<div class="ice-d-row"><span class="ice-d-label">Nome do Set</span><span class="ice-d-val">' + (item.nome_set || '—') + '</span></div>'
-  html += '<div class="ice-d-row"><span class="ice-d-label">Linha / Nº</span><span class="ice-d-val">' + (item.linha_ref || '—') + '</span></div>'
   html += '</div>'
 
   // claims
