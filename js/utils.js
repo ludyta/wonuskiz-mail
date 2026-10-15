@@ -239,7 +239,16 @@ function itemCardExpHTML(item, isOwner) {
     html += '<div class="ice-claims-hd">Claim</div>'
     html += '<div class="ice-claims-hint">Nº do set + linha e coluna + nº da claim/membro(s)</div>'
     claimsArr.forEach(c => {
-      html += '<div class="ice-claim-row">' + c + '</div>'
+      // c pode ser objeto {set,membro,linha} ou string legada
+      const isObj = c && typeof c === 'object'
+      const setStr = isObj ? (c.set || '') : ''
+      const membroStr = isObj ? (c.membro || '') : (typeof c === 'string' ? c : '')
+      const linhaStr = isObj ? (c.linha || '') : ''
+      html += '<div class="ice-claim-row">'
+      if (setStr) html += '<div class="ice-claim-set">' + setStr + '</div>'
+      if (membroStr) html += '<div class="ice-claim-member">' + membroStr + '</div>'
+      if (linhaStr) html += '<div class="ice-claim-linha">' + linhaStr + '</div>'
+      html += '</div>'
     })
     html += '</div>'
   }
