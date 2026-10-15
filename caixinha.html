@@ -163,6 +163,7 @@
         renderAcc()
         renderGrid()
         setView(currentView)
+        restoreNavState()
 
         if (caixinha.transportadora === 'Correios' && caixinha.codigo_rastreio) loadRastreamento()
       } catch(e) {
@@ -207,6 +208,7 @@
           }).join('')
           const el = document.createElement('div')
           el.className = 'acc-item'
+          el.dataset.nomeCeg = nomeCeg
           el.innerHTML = `
             <div class="acc-header" onclick="toggleAccItem(this)">
               <div class="acc-header-left">
@@ -228,6 +230,37 @@
     function renderGrid() {
       document.getElementById('grid-view').innerHTML =
         '<div class="items-grid-exp">' + itens.map(i => itemCardExpHTML(i, true)).join('') + '</div>'
+    }
+
+    function saveNavState() {
+      // descobre qual accordion está aberto e o scroll atual
+      const openAcc = document.querySelector('.acc-item .acc-body.open')
+      const nomeCeg = openAcc ? openAcc.closest('.acc-item')?.dataset.nomeCeg : null
+      try {
+        sessionStorage.setItem('wm-nav-' + caixinhaId, JSON.stringify({
+          nomeCeg,
+          scrollY: window.scrollY
+        }))
+      } catch {}
+    }
+
+    function restoreNavState() {
+      try {
+        const raw = sessionStorage.getItem('wm-nav-' + caixinhaId)
+        if (!raw) return
+        sessionStorage.removeItem('wm-nav-' + caixinhaId)
+        const state = JSON.parse(raw)
+        if (state.nomeCeg) {
+          const accEl = document.querySelector(`.acc-item[data-nome-ceg="${CSS.escape(state.nomeCeg)}"]`)
+          if (accEl) {
+            const header = accEl.querySelector('.acc-header')
+            if (header) toggleAccItem(header)
+          }
+        }
+        if (state.scrollY) {
+          requestAnimationFrame(() => window.scrollTo({ top: state.scrollY, behavior: 'instant' }))
+        }
+      } catch {}
     }
 
     function toggleAccItem(header) {
