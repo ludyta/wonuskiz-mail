@@ -73,6 +73,11 @@
         <span class="stat-sub">agora</span>
       </div>
       <div class="stat-item">
+        <div class="stat-label">enviados</div>
+        <div class="stat-value" id="stat-sent">—</div>
+        <span class="stat-sub">recebidos</span>
+      </div>
+      <div class="stat-item">
         <div class="stat-label">itens</div>
         <div class="stat-value" id="stat-items">—</div>
         <span class="stat-sub">acumulados</span>
@@ -213,10 +218,12 @@
 
         const total = caixinhas.length
         const transit = caixinhas.filter(c => c.status === 'transit').length
+        const sent = caixinhas.filter(c => c.status === 'received').length
         const items = Object.values(itensCount).reduce((a,b) => a+b, 0)
 
         document.getElementById('stat-total').textContent = total
         document.getElementById('stat-transit').textContent = transit
+        document.getElementById('stat-sent').textContent = sent
         document.getElementById('stat-items').textContent = items
         document.getElementById('chip-caixinhas').innerHTML = `<i class="ti ti-package" style="font-size:11px"></i> ${total} caixinhas`
         document.getElementById('chip-transito').innerHTML = `<i class="ti ti-truck-delivery" style="font-size:11px"></i> ${transit} em trânsito`
