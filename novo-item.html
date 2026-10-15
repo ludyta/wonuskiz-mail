@@ -107,21 +107,13 @@
       <div class="form-section">
         <div class="form-section-title">Detalhes</div>
         <div class="form-grid">
-          <div class="form-field">
-            <label class="form-label">Linha / Nº do set</label>
-            <input type="text" id="linha_ref" class="form-input" placeholder="Ex: m93, B34, Set 5...">
-          </div>
-          <div class="form-field">
+          <div class="form-field full">
             <label class="form-label">Quantidade <span class="req">*</span></label>
             <div class="qty-wrap">
               <button class="qty-btn qty-minus">−</button>
               <input type="number" id="quantidade" class="qty-input" value="1" min="1">
               <button class="qty-btn qty-plus">+</button>
             </div>
-          </div>
-          <div class="form-field full">
-            <label class="form-label">Membro(s)</label>
-            <input type="text" id="membro" class="form-input" placeholder="Ex: Seungmin, Bang Chan e Han...">
           </div>
           <!-- claims dinâmicos -->
           <div class="form-field full" id="claims-section">
@@ -153,7 +145,7 @@
         <div class="form-actions-right">
           <a href="#" id="cancel-btn" class="btn btn-ghost">Cancelar</a>
           <button class="btn btn-primary" id="save-btn" onclick="save()">
-            <i class="ti ti-check"></i> <span id="save-label">Salvar item</span>
+            <i class="ti ti-check"></i> <span id="save-label">Salvar</span>
           </button>
         </div>
       </div>
@@ -208,7 +200,7 @@
       if (editId) {
         document.getElementById('page-title').textContent = 'Editar item'
         document.getElementById('bc-current').textContent = 'Editar item'
-        document.getElementById('save-label').textContent = 'Salvar alterações'
+        document.getElementById('save-label').textContent = 'Salvar'
         document.getElementById('delete-btn').style.display = 'inline-flex'
         const rows = await Sheets.getRange('Itens', 'A2:M1000')
         const row = rows.find(r => r[0] === editId)
@@ -217,10 +209,8 @@
           document.getElementById('tipo_ceg').value = row[4] || ''
           document.getElementById('nome_ceg').value = row[5] || ''
           document.getElementById('nome_set').value = row[6] || ''
-          document.getElementById('linha_ref').value = row[7] || ''
           document.getElementById('claim').value = row[8] || ''
           document.getElementById('quantidade').value = row[9] || 1
-          document.getElementById('membro').value = row[11] || ''
           // carrega claims novos (col M = row[12])
           let claimsArr = []
           try { claimsArr = JSON.parse(row[12] || '[]') } catch {}
@@ -301,10 +291,10 @@
           caixinha_id: caixinhaId,
           foto_url: fotoUrl,
           tipo_item, tipo_ceg, nome_ceg, nome_set,
-          linha_ref: document.getElementById('linha_ref').value.trim(),
+          linha_ref: '',
           claim: document.getElementById('claim').value.trim(),
           quantidade: parseInt(document.getElementById('quantidade').value) || 1,
-          membro: document.getElementById('membro').value.trim(),
+          membro: '',
           claims: claimsArr.length ? JSON.stringify(claimsArr) : ''
         }
 
@@ -325,7 +315,7 @@
         console.error(e)
         showToast('Erro ao salvar: ' + e.message, 'error')
         btn.disabled = false
-        btn.innerHTML = '<i class="ti ti-check"></i> <span id="save-label">Salvar item</span>'
+        btn.innerHTML = '<i class="ti ti-check"></i> <span id="save-label">Salvar</span>'
       }
     }
 
