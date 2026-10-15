@@ -1024,51 +1024,53 @@ body {
 }
 
 /* ── ITEM CARD EXPANDIDO ── */
-.item-card-exp{background:var(--sf);border:1.5px solid var(--bo);border-radius:14px;overflow:hidden;position:relative;transition:box-shadow .2s}
-.item-card-exp:hover{box-shadow:0 4px 20px rgba(108,97,155,.15)}
+.item-card-exp{background:var(--sf);border:1.5px solid var(--bo);border-radius:14px;overflow:hidden;position:relative;transition:box-shadow .2s,border-color .2s;box-shadow:0 2px 12px rgba(108,97,155,.08)}
+.item-card-exp:hover{box-shadow:0 4px 20px rgba(108,97,155,.13)}
+.item-card-exp.done{border-color:rgba(205,132,114,.38);box-shadow:0 2px 12px rgba(205,132,114,.07)}
 
-.ice-img-wrap{position:relative;overflow:hidden;height:220px}
+/* 1. foto */
+.ice-img-wrap{position:relative;overflow:hidden;aspect-ratio:3/2;background:var(--sf2)}
 .ice-img-wrap img{width:100%;height:100%;object-fit:cover;display:block}
-.ice-img-placeholder{width:100%;height:100%;background:var(--sf2);display:flex;align-items:center;justify-content:center;color:var(--ts);font-size:32px}
-.ice-img-overlay{position:absolute;inset:0;cursor:zoom-in;display:flex;align-items:flex-end;justify-content:space-between;padding:8px}
-.ice-qty-badge{background:rgba(15,11,26,.75);backdrop-filter:blur(6px);color:#F7F8EF;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;border:1px solid rgba(186,180,221,.3)}
-.ice-zoom-hint{background:rgba(15,11,26,.6);backdrop-filter:blur(4px);color:rgba(247,248,239,.7);font-size:10px;padding:3px 7px;border-radius:20px;display:flex;align-items:center;gap:3px}
+.ice-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ts);font-size:32px}
+/* zoom — canto superior direito */
+.ice-zoom-btn{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(15,11,26,.72);backdrop-filter:blur(6px);border:1px solid rgba(186,180,221,.28);display:flex;align-items:center;justify-content:center;cursor:zoom-in;color:#F7F8EF;font-size:14px}
+/* badge qtd — canto inferior direito */
+.ice-qty-badge{position:absolute;bottom:10px;right:10px;background:rgba(15,11,26,.75);backdrop-filter:blur(6px);border:1px solid rgba(186,180,221,.25);border-radius:20px;padding:3px 10px 3px 7px;display:flex;align-items:center;gap:5px;color:#F7F8EF;font-family:'DM Mono',monospace;font-size:11px;font-weight:700}
+.ice-qty-badge i{font-size:11px;opacity:.7}
 
-.ice-header{padding:10px 12px 8px}
-.ice-type{font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--sa);margin-bottom:3px}
-.ice-setname{font-size:14px;font-weight:800;color:var(--tx);line-height:1.2;margin-bottom:2px}
-.ice-ref{font-family:'DM Mono',monospace;font-size:9px;color:var(--ts)}
+/* 2. infos rápidas */
+.ice-quick{padding:12px 14px 10px;border-bottom:1px dashed var(--bo)}
+.ice-eyebrow{font-family:'DM Mono',monospace;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--sa);margin-bottom:3px;display:flex;align-items:center;gap:5px}
+.ice-eyebrow .dot{opacity:.45}
+.ice-name{font-size:20px;font-weight:900;letter-spacing:-.03em;line-height:1.05;color:var(--tx);margin-bottom:2px}
+.ice-ceg{font-size:12px;color:var(--pu);font-weight:600}
 
-.ice-details-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;border-top:1px dashed var(--bo);border-bottom:1px dashed var(--bo);transition:background .12s}
-.ice-details-toggle:hover{background:var(--sf2)}
-.ice-toggle-lbl{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--pu);display:flex;align-items:center;gap:6px}
-.ice-chevron{color:var(--pu);font-size:14px;transition:transform .2s}
-.ice-chevron.open{transform:rotate(180deg)}
-
-.ice-details{display:none;padding:10px 12px;border-bottom:1px dashed var(--bo)}
-.ice-details.open{display:block}
-.ice-d-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed var(--bo)}
-.ice-d-row:last-child{border-bottom:none}
-.ice-d-label{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--ts)}
-.ice-d-val{font-size:12px;font-weight:600;color:var(--tx);text-align:right;max-width:58%}
-.ice-d-val.qty{color:var(--pu);font-size:15px;font-weight:800}
-.ice-claim{background:var(--sf2);border-radius:8px;padding:9px 11px;margin-top:8px}
-.ice-claim-lbl{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--ts);margin-bottom:4px}
+/* 3. detalhes */
+.ice-details{padding:2px 14px 0}
+.ice-d-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--bo)}
+.ice-d-row:last-of-type{border-bottom:none}
+.ice-d-label{font-family:'DM Mono',monospace;font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ts);flex-shrink:0;padding-top:1px;min-width:88px;opacity:.8}
+.ice-d-val{font-size:12px;font-weight:600;color:var(--tx);text-align:right;line-height:1.4;min-width:0}
+/* claim */
+.ice-claim{background:var(--sf2);border-radius:8px;border-left:3px solid var(--pu);padding:9px 11px;margin:6px 0 10px;opacity:.92}
+.ice-claim-lbl{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--cr);margin-bottom:4px}
 .ice-claim-val{font-size:12px;color:var(--tx);line-height:1.5;font-weight:500}
 
-.ice-footer{display:flex;align-items:center;gap:8px;padding:10px 12px}
-.ice-sep-btn{flex:1;display:flex;align-items:center;gap:10px;background:var(--sf2);border:1.5px solid var(--bo);border-radius:10px;padding:10px 12px;cursor:pointer;transition:border-color .15s,background .15s}
+/* 4. footer separado */
+.ice-footer{display:flex;align-items:center;gap:8px;padding:9px 10px;border-top:1px dashed var(--bo);transition:background .2s,border-top-color .2s}
+.item-card-exp.done .ice-footer{background:rgba(205,132,114,.09);border-top-color:rgba(205,132,114,.35)}
+.ice-sep-btn{flex:1;display:flex;align-items:center;gap:10px;background:var(--bg);border:1.5px solid var(--bo);border-radius:10px;padding:10px 12px;cursor:pointer;transition:border-color .15s,background .15s;min-width:0}
 .ice-sep-btn:hover{border-color:var(--pu)}
-.ice-sep-btn.done{border-color:#3edc78;background:rgba(62,220,120,.07)}
+.ice-sep-btn.done{border-color:rgba(205,132,114,.4);background:rgba(205,132,114,.09)}
 .ice-big-chk{width:20px;height:20px;border-radius:5px;border:2px solid var(--pu);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
-.ice-big-chk.on{background:var(--pu);border-color:var(--pu)}
+.ice-big-chk.on{background:var(--sa);border-color:var(--sa)}
 .ice-big-chk.on::after{content:'✓';font-size:11px;color:#F7F8EF}
-.ice-sep-btn.done .ice-big-chk{background:#3edc78;border-color:#3edc78}
+.ice-sep-btn.done .ice-big-chk{background:var(--sa);border-color:var(--sa)}
 .ice-sep-lbl{font-size:12px;font-weight:700;color:var(--tx);display:block}
 .ice-sep-sub{font-size:10px;color:var(--ts);display:block}
-.ice-sep-btn.done .ice-sep-lbl{color:#3edc78}
-.ice-edit-btn{width:38px;height:38px;border-radius:10px;background:var(--sf2);border:1.5px solid var(--bo);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ts);font-size:16px;flex-shrink:0;transition:all .15s;text-decoration:none}
-.ice-edit-btn:hover{border-color:var(--pu);color:var(--pu);background:var(--bg2)}
+.ice-sep-btn.done .ice-sep-lbl{color:var(--sa)}
+.ice-edit-btn{width:38px;height:38px;border-radius:10px;background:var(--bg);border:1.5px solid var(--bo);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ts);font-size:16px;flex-shrink:0;transition:all .15s;text-decoration:none}
+.ice-edit-btn:hover{border-color:var(--pu);color:var(--pu);background:var(--sf2)}
 
 /* lightbox */
 .wm-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
