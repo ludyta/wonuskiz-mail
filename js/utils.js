@@ -215,7 +215,7 @@ function itemCardExpHTML(item, isOwner) {
   // 2. infos rápidas
   html += '<div class="ice-quick">'
   html += '<div class="ice-eyebrow">' + (item.tipo_item || '—') + '<span class="dot">·</span>' + qty + (qty === 1 ? ' item' : ' itens') + '</div>'
-  html += '<div class="ice-name">' + (item.claim || item.nome_set || '—') + '</div>'
+  html += '<div class="ice-name">' + (item.membro || item.nome_set || '—') + '</div>'
   html += '<div class="ice-ceg">' + (item.nome_ceg || '—') + '</div>'
   html += '</div>'
 
