@@ -42,19 +42,28 @@
         <div class="gom-chips" id="h-chips"></div>
       </div>
 
-      <div class="stats-band">
-        <div class="stat-item">
-          <div class="stat-label">pedido em</div>
-          <div class="stat-value" id="h-data-pedido" style="font-size:14px;padding-top:5px;font-weight:700;letter-spacing:0">—</div>
+      <div class="cx-info-band">
+        <div class="cx-status-row">
+          <span class="cx-status-label">status da caixinha</span>
+          <span id="h-status"></span>
         </div>
-        <div class="stat-item">
-          <div class="stat-label">transportadora</div>
-          <div class="stat-value" id="h-transportadora" style="font-size:13px;padding-top:6px;font-weight:700;letter-spacing:0">—</div>
-          <span class="stat-sub" id="h-rastreio"></span>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">status</div>
-          <div id="h-status" style="padding-top:8px"></div>
+        <div class="cx-info-grid">
+          <div class="cx-info-cell">
+            <span class="cx-info-lbl">pedido em</span>
+            <span class="cx-info-val" id="h-data-pedido">—</span>
+          </div>
+          <div class="cx-info-cell" id="h-tipo-envio-cell">
+            <span class="cx-info-lbl">tipo de envio</span>
+            <span class="cx-info-val" id="h-tipo-envio">—</span>
+          </div>
+          <div class="cx-info-cell">
+            <span class="cx-info-lbl">transportadora</span>
+            <span class="cx-info-val" id="h-transportadora">—</span>
+          </div>
+          <div class="cx-info-cell">
+            <span class="cx-info-lbl">rastreamento</span>
+            <span id="h-rastreio-wrap">—</span>
+          </div>
         </div>
       </div>
 
@@ -114,10 +123,12 @@
     if (!caixinhaId) location.href = 'dashboard.html'
 
     const STATUS_CFG = {
-      accumulating: { label: 'Acumulando', cls: 'stamp-accumulating' },
-      posted:       { label: 'Postado',    cls: 'stamp-posted' },
-      transit:      { label: 'Em trânsito',cls: 'stamp-transit' },
-      received:     { label: 'Recebido',   cls: 'stamp-received' },
+      accumulating:  { label: 'Acumulando',        cls: 'stamp-accumulating' },
+      waiting_quote: { label: 'Aguardando cotação', cls: 'stamp-waiting-quote' },
+      waiting_send:  { label: 'Aguardando envio',  cls: 'stamp-waiting-send' },
+      posted:        { label: 'Postado',            cls: 'stamp-posted' },
+      transit:       { label: 'Em trânsito',        cls: 'stamp-transit' },
+      received:      { label: 'Recebido',           cls: 'stamp-received' },
     }
 
     let caixinha, itens = [], currentView = localStorage.getItem('wm-item-view') || 'acc'
@@ -136,10 +147,18 @@
         const cfg = STATUS_CFG[caixinha.status] || STATUS_CFG.accumulating
         document.getElementById('h-comunidade').textContent = (caixinha.comunidade || '') + ' ✦'
         document.getElementById('h-nome').textContent = caixinha.nome
-        document.getElementById('h-data-pedido').textContent = formatDate(caixinha.data_pedido)
-        document.getElementById('h-transportadora').textContent = caixinha.transportadora || '—'
-        document.getElementById('h-rastreio').textContent = caixinha.codigo_rastreio || ''
         document.getElementById('h-status').innerHTML = `<span class="stamp ${cfg.cls}">${cfg.label}</span>`
+        document.getElementById('h-data-pedido').textContent = formatDate(caixinha.data_pedido) || '—'
+        document.getElementById('h-tipo-envio').textContent = caixinha.tipo_envio || '—'
+        document.getElementById('h-transportadora').textContent = caixinha.transportadora || '—'
+        // Rastreio: link salmon ou dash
+        const rastreioWrap = document.getElementById('h-rastreio-wrap')
+        if (caixinha.codigo_rastreio) {
+          const correiosUrl = `https://rastreamento.correios.com.br/app/index.php?P_LINGUA=001&P_TIPO=001&P_COD_UNI=${caixinha.codigo_rastreio}`
+          rastreioWrap.innerHTML = `<a href="${correiosUrl}" target="_blank" class="cx-rastreio-code">${caixinha.codigo_rastreio}<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a><span class="cx-rastreio-status" id="h-rastreio-status"></span>`
+        } else {
+          rastreioWrap.textContent = '—'
+        }
         document.getElementById('edit-link').href = `nova-caixinha.html?id=${caixinhaId}`
         document.getElementById('new-item-link').href = `novo-item.html?caixinha_id=${caixinhaId}`
         document.getElementById('empty-new-item').href = `novo-item.html?caixinha_id=${caixinhaId}`
@@ -166,6 +185,10 @@
         restoreNavState()
 
         if (caixinha.transportadora === 'Correios' && caixinha.codigo_rastreio) loadRastreamento()
+        else if (!caixinha.codigo_rastreio) {
+          const cell = document.getElementById('h-tipo-envio-cell')
+          if (cell && (!caixinha.tipo_envio)) cell.style.display = 'none'
+        }
       } catch(e) {
         console.error(e)
         document.getElementById('loading').innerHTML = '<i class="ti ti-alert-circle"></i> Erro ao carregar'
@@ -288,9 +311,9 @@
 
     async function loadRastreamento() {
       const status = await Sheets.getRastreamento(caixinha.codigo_rastreio)
-      if (status) {
-        const el = document.getElementById('h-rastreio')
-        el.innerHTML = `${caixinha.codigo_rastreio}<br><small style="font-size:10px;opacity:.7">${status.status}</small>`
+      const statusEl = document.getElementById('h-rastreio-status')
+      if (status && statusEl) {
+        statusEl.textContent = status.status + (status.data ? ' · ' + status.data : '')
       }
     }
 
