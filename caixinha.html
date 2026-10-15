@@ -14,7 +14,14 @@
       <a href="dashboard.html" class="navbar-link">dashboard</a>
       <a href="configuracoes.html" class="navbar-link">configurações</a>
       <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()"><i class="ti ti-sun"></i><span>light</span></button>
-      <div class="navbar-avatar" onclick="Auth.logout()" title="Sair">l</div>
+      <div class="navbar-avatar-wrap">
+        <div class="navbar-avatar" id="user-avatar" onclick="toggleAvatarMenu()" title="Perfil">l</div>
+        <div class="avatar-menu" id="avatar-menu">
+          <a href="perfil.html" class="avatar-menu-item"><i class="ti ti-user"></i> Meu perfil</a>
+          <div class="avatar-menu-sep"></div>
+          <button class="avatar-menu-item danger" onclick="Auth.logout()"><i class="ti ti-logout"></i> Sair</button>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -91,6 +98,17 @@
   <script>
     Theme.init()
     if (!Auth.requireAuth()) throw new Error('Not authenticated')
+
+    function toggleAvatarMenu() {
+      document.getElementById('avatar-menu').classList.toggle('open')
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.navbar-avatar-wrap')) {
+        const m = document.getElementById('avatar-menu')
+        if (m) m.classList.remove('open')
+      }
+    })
+
     const params = new URLSearchParams(location.search)
     const caixinhaId = params.get('id')
     if (!caixinhaId) location.href = 'dashboard.html'
