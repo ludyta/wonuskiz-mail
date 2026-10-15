@@ -82,7 +82,7 @@
         const itens = itensRows.filter(r => r[0] && r[1] === caixinhaId).map(r => ({
           id:r[0], caixinha_id:r[1], foto_url:r[2], tipo_item:r[3], tipo_ceg:r[4],
           nome_ceg:r[5], nome_set:r[6], linha_ref:r[7], claim:r[8],
-          quantidade:parseInt(r[9])||1, separado:r[10]==='TRUE'
+          quantidade:parseInt(r[9])||1, separado:r[10]==='TRUE', claims:r[12]||''
         }))
 
         // Lê nome e @ do perfil da aba Config
