@@ -203,9 +203,10 @@
     async function loadDashboard() {
       try {
         caixinhas = await Sheets.getCaixinhas()
-        const todosItens = await Sheets.getRange('Itens', 'A2:B1000')
+        const todosItens = await Sheets.getRange('Itens', 'A2:K1000')
         todosItens.filter(r => r[0]).forEach(r => {
-          itensCount[r[1]] = (itensCount[r[1]] || 0) + 1
+          const qtd = parseInt(r[9]) || 1
+          itensCount[r[1]] = (itensCount[r[1]] || 0) + qtd
         })
 
         document.getElementById('loading').style.display = 'none'
