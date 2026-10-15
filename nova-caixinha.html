@@ -68,6 +68,17 @@
             </select>
           </div>
           <div class="form-field">
+            <label class="form-label">Tipo de envio</label>
+            <select id="tipo_envio" class="form-select">
+              <option value="">— selecionar —</option>
+              <option value="Mini Envios">Mini Envios</option>
+              <option value="PAC">PAC</option>
+              <option value="SEDEX">SEDEX</option>
+              <option value="Carta Registrada">Carta Registrada</option>
+              <option value="Outra">Outra modalidade</option>
+            </select>
+          </div>
+          <div class="form-field">
             <label class="form-label">Código de rastreio</label>
             <input type="text" id="codigo_rastreio" class="form-input" placeholder="Ex: BR123456789BR">
             <span class="form-hint" id="rastreio-hint">Consultado automaticamente nos Correios</span>
@@ -90,6 +101,8 @@
             <label class="form-label">Status atual</label>
             <select id="status" class="form-select">
               <option value="accumulating">Acumulando</option>
+              <option value="waiting_quote">Aguardando cotação</option>
+              <option value="waiting_send">Aguardando envio</option>
               <option value="posted">Postado</option>
               <option value="transit">Em trânsito</option>
               <option value="received">Recebido</option>
@@ -142,6 +155,7 @@
           document.getElementById('nome').value = data.nome || ''
           document.getElementById('comunidade').value = data.comunidade || ''
           document.getElementById('transportadora').value = data.transportadora || 'Correios'
+          document.getElementById('tipo_envio').value = data.tipo_envio || ''
           document.getElementById('codigo_rastreio').value = data.codigo_rastreio || ''
           document.getElementById('data_pedido').value = data.data_pedido || ''
           document.getElementById('data_envio').value = data.data_envio || ''
@@ -169,6 +183,7 @@
         const data = {
           nome, comunidade,
           transportadora: document.getElementById('transportadora').value,
+          tipo_envio: document.getElementById('tipo_envio').value,
           codigo_rastreio: document.getElementById('codigo_rastreio').value.trim(),
           data_pedido: document.getElementById('data_pedido').value,
           data_envio: document.getElementById('data_envio').value,
