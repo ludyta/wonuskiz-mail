@@ -75,7 +75,7 @@ const Sheets = {
 
   // ==== CAIXINHAS ====
   async getCaixinhas() {
-    const rows = await this.getRange('Caixinhas', 'A2:H1000')
+    const rows = await this.getRange('Caixinhas', 'A2:I1000')
     return rows
       .filter(r => r[0] && r[0] !== 'id')
       .map(r => ({
@@ -84,9 +84,10 @@ const Sheets = {
         comunidade: r[2] || '',
         data_pedido: r[3] || '',
         data_envio: r[4] || '',
-        transportadora: r[5] || 'Correios',
-        codigo_rastreio: r[6] || '',
-        status: r[7] || 'accumulating'
+        tipo_envio: r[5] || '',
+        transportadora: r[6] || 'Correios',
+        codigo_rastreio: r[7] || '',
+        status: r[8] || 'accumulating'
       }))
   },
 
@@ -103,6 +104,7 @@ const Sheets = {
       data.comunidade || '',
       data.data_pedido || '',
       data.data_envio || '',
+      data.tipo_envio || '',
       data.transportadora || 'Correios',
       data.codigo_rastreio || '',
       data.status || 'accumulating'
@@ -117,6 +119,7 @@ const Sheets = {
       data.comunidade || '',
       data.data_pedido || '',
       data.data_envio || '',
+      data.tipo_envio || '',
       data.transportadora || 'Correios',
       data.codigo_rastreio || '',
       data.status || 'accumulating'
@@ -274,9 +277,9 @@ const Sheets = {
       }
 
       // 2. Sempre escreve cabeçalhos na linha 1 (idempotente)
-      await this.setRange('Caixinhas', 'A1:H1', [[
+      await this.setRange('Caixinhas', 'A1:I1', [[
         'id','nome','comunidade','data_pedido','data_envio',
-        'transportadora','codigo_rastreio','status'
+        'tipo_envio','transportadora','codigo_rastreio','status'
       ]])
       await this.setRange('Itens', 'A1:M1', [[
         'id','caixinha_id','foto_url','tipo_item','tipo_ceg',
