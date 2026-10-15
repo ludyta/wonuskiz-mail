@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu perfil — wonuskiz-mail</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <style>
+    .perfil-wrap {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 0 48px;
+    }
+    .perfil-section {
+      background: var(--card);
+      border: 1px solid var(--bo);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .perfil-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    /* Foto */
+    .foto-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .foto-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--bo);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--roxo);
+      border: 2px solid var(--bo);
+    }
+    .foto-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .foto-actions { display: flex; flex-direction: column; gap: 8px; }
+    .foto-hint { font-size: 12px; color: var(--muted); }
+    #foto-input { display: none; }
+
+    /* Campos */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .field-row {
+      display: grid;
+      gap: 12px;
+    }
+    .field-row.col2 { grid-template-columns: 1fr 1fr; }
+    .field-row.col3 { grid-template-columns: 120px 1fr 1fr; }
+    @media (max-width: 500px) {
+      .field-row.col2, .field-row.col3 { grid-template-columns: 1fr; }
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .field label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .field input, .field textarea {
+      background: var(--bg);
+      border: 1px solid var(--bo);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 14px;
+      color: var(--fg);
+      font-family: inherit;
+      transition: border-color .15s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .field input:focus, .field textarea:focus {
+      outline: none;
+      border-color: var(--roxo);
+    }
+    .field input.mono, .field textarea.mono {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+    }
+    .field input:read-only, .field textarea:read-only {
+      color: var(--muted);
+      cursor: default;
+    }
+    .field-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Endereço completo com botão copiar */
+    .addr-wrap {
+      position: relative;
+    }
+    .addr-wrap textarea {
+      resize: none;
+      line-height: 1.6;
+      padding-right: 44px;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bo);
+      border: none;
+      border-radius: 6px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .copy-btn:hover { background: var(--roxo); color: #fff; }
+
+    /* Nota de privacidade */
+    .privacy-note {
+      background: color-mix(in srgb, var(--roxo) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--roxo) 30%, transparent);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--fg);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .privacy-note strong { color: var(--roxo); }
+
+    /* Botões de ação */
+    .perfil-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+    .save-feedback {
+      font-size: 13px;
+      color: var(--salm);
+      align-self: center;
+      display: none;
+    }
+  </style>
+</head>
+<body class="dark">
+  <nav class="navbar">
+    <a href="dashboard.html" class="navbar-logo">wonuskiz <span class="navbar-badge">mail ✦</span></a>
+    <div class="navbar-links">
+      <a href="dashboard.html" class="navbar-link">dashboard</a>
+      <a href="configuracoes.html" class="navbar-link">configurações</a>
+      <button class="theme-toggle" id="theme-toggle" onclick="Theme.toggle()"><i class="ti ti-sun"></i><span>light</span></button>
+      <div class="navbar-avatar-wrap">
+        <div class="navbar-avatar" id="user-avatar" onclick="toggleAvatarMenu()" title="Perfil">l</div>
+        <div class="avatar-menu" id="avatar-menu">
+          <a href="perfil.html" class="avatar-menu-item active"><i class="ti ti-user"></i> Meu perfil</a>
+          <div class="avatar-menu-sep"></div>
+          <button class="avatar-menu-item danger" onclick="Auth.logout()"><i class="ti ti-logout"></i> Sair</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="breadcrumb">
+      <a href="dashboard.html">dashboard</a>
+      <span class="breadcrumb-sep">›</span>
+      <span>meu perfil</span>
+    </div>
+
+    <div id="loading" class="loading"><i class="ti ti-loader ti-spin"></i> Carregando...</div>
+
+    <div id="perfil-content" class="perfil-wrap" style="display:none">
+
+      <!-- Foto -->
+      <div class="perfil-section">
+        <div class="perfil-section-title">Foto de perfil</div>
+        <div class="foto-row">
+          <div class="foto-preview" id="foto-preview">
+            <span id="foto-inicial">l</span>
+          </div>
+          <div class="foto-actions">
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('foto-input').click()">
+              <i class="ti ti-upload"></i> Enviar foto
+            </button>
+            <input type="file" id="foto-input" accept="image/*" onchange="handleFotoUpload(this)">
+            <span class="foto-hint">JPG, PNG ou GIF. Máx. 5 MB.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dados públicos -->
+      <div class="perfil-section">
+        <div class="perfil-section-title">Dados públicos</div>
+        <div class="field-group">
+          <div class="field">
+            <label>Nome</label>
+            <input type="text" id="f-nome" placeholder="seu nome" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Seu @ no Twitter/X</label>
+            <input type="text" id="f-handle" placeholder="@seuhandle" autocomplete="off" class="mono">
+          </div>
+        </div>
+        <p class="field-hint" style="margin-top:12px">Esses dados aparecem na página pública enviada para a GOM.</p>
+      </div>
+
+      <!-- Endereço (privado) -->
+      <div class="perfil-section">
+        <div class="perfil-section-title">Endereço para recebimento</div>
+
+        <div class="privacy-note">
+          🔒 <strong>Privado:</strong> seu endereço fica salvo só para você e não aparece na página enviada para a GOM.
+        </div>
+
+        <div class="field-group">
+          <div class="field-row col2">
+            <div class="field">
+              <label>CEP</label>
+              <input type="text" id="f-cep" placeholder="00000-000" class="mono" maxlength="9"
+                oninput="maskCep(this)" onblur="fetchCep(this.value)">
+            </div>
+            <div class="field">
+              <label>Estado (UF)</label>
+              <input type="text" id="f-uf" placeholder="SP" class="mono" maxlength="2" style="text-transform:uppercase">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Rua / Logradouro</label>
+            <input type="text" id="f-rua" placeholder="Rua das Flores">
+          </div>
+
+          <div class="field-row col2">
+            <div class="field">
+              <label>Número</label>
+              <input type="text" id="f-num" placeholder="123">
+            </div>
+            <div class="field">
+              <label>Complemento</label>
+              <input type="text" id="f-comp" placeholder="Apto 4B">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Bairro</label>
+            <input type="text" id="f-bairro" placeholder="Jardim América">
+          </div>
+
+          <div class="field">
+            <label>Cidade</label>
+            <input type="text" id="f-cidade" placeholder="São Paulo">
+          </div>
+
+          <div class="field">
+            <label>Endereço completo</label>
+            <div class="addr-wrap">
+              <textarea id="f-addr-full" class="mono" rows="3" readonly></textarea>
+              <button class="copy-btn" onclick="copyAddr()" title="Copiar endereço">
+                <i class="ti ti-copy"></i>
+              </button>
+            </div>
+            <span class="field-hint">Preenchido automaticamente — clique no ícone para copiar.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="perfil-actions">
+        <span class="save-feedback" id="save-feedback">✓ Salvo!</span>
+        <button class="btn btn-primary" onclick="savePerfil()" id="btn-save">
+          <i class="ti ti-device-floppy"></i> Salvar perfil
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/sheets.js"></script>
+  <script src="js/drive.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    Theme.init()
+    if (!Auth.requireAuth()) throw new Error('Not authenticated')
+
+    let fotoUrl = ''
+
+    // Fecha o menu ao clicar fora
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.navbar-avatar-wrap')) {
+        document.getElementById('avatar-menu').classList.remove('open')
+      }
+    })
+    function toggleAvatarMenu() {
+      document.getElementById('avatar-menu').classList.toggle('open')
+    }
+
+    async function load() {
+      try {
+        // Carrega dados públicos (nome e @) do Sheets
+        const pub = await Sheets.getPerfilPublico()
+        if (pub.nome) document.getElementById('f-nome').value = pub.nome
+        if (pub.handle) document.getElementById('f-handle').value = pub.handle
+
+        // Carrega dados privados (endereço + foto) do Drive appDataFolder
+        const priv = await Drive.loadPerfilPrivado()
+        if (priv) {
+          if (priv.foto_url) setFoto(priv.foto_url)
+          if (priv.cep) document.getElementById('f-cep').value = priv.cep
+          if (priv.uf) document.getElementById('f-uf').value = priv.uf
+          if (priv.rua) document.getElementById('f-rua').value = priv.rua
+          if (priv.num) document.getElementById('f-num').value = priv.num
+          if (priv.comp) document.getElementById('f-comp').value = priv.comp
+          if (priv.bairro) document.getElementById('f-bairro').value = priv.bairro
+          if (priv.cidade) document.getElementById('f-cidade').value = priv.cidade
+        }
+
+        // Inicial do avatar na navbar
+        const inicial = (pub.nome || 'l')[0].toLowerCase()
+        document.getElementById('user-avatar').textContent = inicial
+        document.getElementById('foto-inicial').textContent = inicial
+
+        buildAddr()
+        document.getElementById('loading').style.display = 'none'
+        document.getElementById('perfil-content').style.display = 'block'
+
+        // Listeners para montar endereço em tempo real
+        ['f-rua','f-num','f-comp','f-bairro','f-cidade','f-cep','f-uf'].forEach(id => {
+          document.getElementById(id).addEventListener('input', buildAddr)
+        })
+      } catch(e) {
+        console.error(e)
+        document.getElementById('loading').innerHTML = '<i class="ti ti-alert-circle"></i> Erro ao carregar'
+      }
+    }
+
+    function setFoto(url) {
+      fotoUrl = url
+      const preview = document.getElementById('foto-preview')
+      preview.innerHTML = `<img src="${url}" alt="Foto de perfil">`
+    }
+
+    async function handleFotoUpload(input) {
+      const file = input.files[0]
+      if (!file) return
+      if (file.size > 5 * 1024 * 1024) { showToast('Foto muito grande. Máx. 5 MB.', 'error'); return }
+      const reader = new FileReader()
+      reader.onload = async e => {
+        try {
+          showToast('Enviando foto...')
+          const url = await Drive.uploadImage(e.target.result, 'perfil_' + Date.now() + '.jpg')
+          setFoto(url)
+          showToast('Foto enviada!')
+        } catch(err) {
+          showToast('Erro ao enviar foto: ' + err.message, 'error')
+        }
+      }
+      reader.readAsDataURL(file)
+    }
+
+    function maskCep(input) {
+      let v = input.value.replace(/\D/g, '').slice(0, 8)
+      if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5)
+      input.value = v
+    }
+
+    async function fetchCep(cep) {
+      const digits = cep.replace(/\D/g, '')
+      if (digits.length !== 8) return
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`)
+        const data = await res.json()
+        if (data.erro) { showToast('CEP não encontrado', 'error'); return }
+        document.getElementById('f-rua').value = data.logradouro || ''
+        document.getElementById('f-bairro').value = data.bairro || ''
+        document.getElementById('f-cidade').value = data.localidade || ''
+        document.getElementById('f-uf').value = data.uf || ''
+        buildAddr()
+        document.getElementById('f-num').focus()
+      } catch(e) {
+        console.warn('ViaCEP error:', e)
+      }
+    }
+
+    function buildAddr() {
+      const rua  = document.getElementById('f-rua').value.trim()
+      const num  = document.getElementById('f-num').value.trim()
+      const comp = document.getElementById('f-comp').value.trim()
+      const bairro = document.getElementById('f-bairro').value.trim()
+      const cidade = document.getElementById('f-cidade').value.trim()
+      const uf   = document.getElementById('f-uf').value.trim()
+      const cep  = document.getElementById('f-cep').value.trim()
+
+      const linha1 = [rua, num, comp].filter(Boolean).join(', ')
+      const linha2 = [bairro, cidade && uf ? cidade + ' – ' + uf : cidade || uf].filter(Boolean).join(' · ')
+      const linha3 = cep ? 'CEP ' + cep : ''
+
+      document.getElementById('f-addr-full').value = [linha1, linha2, linha3].filter(Boolean).join('\n')
+    }
+
+    function copyAddr() {
+      const txt = document.getElementById('f-addr-full').value
+      if (!txt) return
+      navigator.clipboard.writeText(txt).then(() => {
+        showToast('Endereço copiado!')
+      }).catch(() => {
+        document.getElementById('f-addr-full').select()
+      })
+    }
+
+    async function savePerfil() {
+      const btn = document.getElementById('btn-save')
+      btn.disabled = true
+      btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Salvando...'
+
+      try {
+        const nome   = document.getElementById('f-nome').value.trim()
+        const handle = document.getElementById('f-handle').value.trim()
+
+        // Salva nome e @ no Sheets (público)
+        await Sheets.savePerfilPublico(nome, handle)
+
+        // Salva endereço + foto no Drive (privado)
+        await Drive.savePerfilPrivado({
+          foto_url: fotoUrl,
+          cep:    document.getElementById('f-cep').value.trim(),
+          uf:     document.getElementById('f-uf').value.trim(),
+          rua:    document.getElementById('f-rua').value.trim(),
+          num:    document.getElementById('f-num').value.trim(),
+          comp:   document.getElementById('f-comp').value.trim(),
+          bairro: document.getElementById('f-bairro').value.trim(),
+          cidade: document.getElementById('f-cidade').value.trim()
+        })
+
+        const fb = document.getElementById('save-feedback')
+        fb.style.display = 'block'
+        setTimeout(() => { fb.style.display = 'none' }, 2500)
+        showToast('Perfil salvo com sucesso!')
+
+        // Atualiza inicial do avatar
+        if (nome) {
+          const ini = nome[0].toLowerCase()
+          document.getElementById('user-avatar').textContent = fotoUrl ? '' : ini
+          if (!fotoUrl) document.getElementById('foto-inicial').textContent = ini
+        }
+      } catch(e) {
+        showToast('Erro ao salvar: ' + e.message, 'error')
+      } finally {
+        btn.disabled = false
+        btn.innerHTML = '<i class="ti ti-device-floppy"></i> Salvar perfil'
+      }
+    }
+
+    load()
+  </script>
+</body>
+</html>
