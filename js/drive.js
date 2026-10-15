@@ -115,6 +115,54 @@ const Drive = {
     return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`
   },
 
+  // ==== PERFIL PRIVADO (endereço + foto URL) — salvo no appDataFolder ====
+  async savePerfilPrivado(data) {
+    // Busca arquivo existente
+    const search = await this.request(
+      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'wonuskiz-perfil.json'&fields=files(id)`
+    )
+    const json = JSON.stringify(data)
+    const blob = new Blob([json], { type: 'application/json' })
+
+    if (search.files && search.files.length > 0) {
+      // Atualiza
+      const fileId = search.files[0].id
+      await fetch(
+        `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
+        { method: 'PATCH', headers: { 'Authorization': `Bearer ${this.accessToken}`, 'Content-Type': 'application/json' }, body: blob }
+      )
+    } else {
+      // Cria novo
+      const metadata = JSON.stringify({ name: 'wonuskiz-perfil.json', parents: ['appDataFolder'] })
+      const form = new FormData()
+      form.append('metadata', new Blob([metadata], { type: 'application/json' }))
+      form.append('file', blob)
+      await fetch(
+        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+        { method: 'POST', headers: { 'Authorization': `Bearer ${this.accessToken}` }, body: form }
+      )
+    }
+  },
+
+  async loadPerfilPrivado() {
+    try {
+      const search = await this.request(
+        `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'wonuskiz-perfil.json'&fields=files(id)`
+      )
+      if (!search.files || search.files.length === 0) return null
+      const fileId = search.files[0].id
+      const res = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+        { headers: { 'Authorization': `Bearer ${this.accessToken}` } }
+      )
+      if (!res.ok) return null
+      return await res.json()
+    } catch(e) {
+      console.warn('loadPerfilPrivado error:', e)
+      return null
+    }
+  },
+
   // Deleta um arquivo do Drive (por URL)
   async deleteImage(url) {
     try {
